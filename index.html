@@ -216,26 +216,26 @@
       let html = '';
       filteredClasses.forEach(c => {
         const isFull = parseInt(c.remaining) <= 0;
-        
-        // ปรับแก้ตรงนี้: เปลี่ยนพื้นหลังสีเขียว ตัวอักษรสีขาว เมื่อคลาสยังว่าง
-        const badgeClass = isFull 
-          ? 'text-red-500 bg-red-50' 
-          : 'text-white bg-green-500';
+        const badgeClass = isFull ? 'text-white bg-red-500' : 'text-white bg-green-500';
           
         html += `
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-            <span class="absolute top-5 right-5 text-xs font-bold ${badgeClass} px-2 py-1 rounded-md shadow-sm">
-              ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
-            </span>
-            <h2 class="text-lg font-bold text-slate-800 pr-16">${c.className}</h2>
-            <p class="text-sm text-slate-500 mt-2 mb-4 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <h2 class="text-lg font-bold text-slate-800">${c.className}</h2>
+            <p class="text-sm text-slate-500 mt-1.5 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               ${c.time}
             </p>
-            <button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} 
-              class="w-full flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
-              ${isFull ? 'คลาสเต็ม' : 'เลือกคลาสนี้'}
-            </button>
+            
+            <!-- จุดที่ปรับ UX/UI: เอา Badge และปุ่มมาอยู่แถวเดียวกัน -->
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 gap-3">
+              <span class="text-xs font-bold ${badgeClass} px-3 py-2.5 rounded-xl shadow-sm whitespace-nowrap text-center">
+                ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
+              </span>
+              <button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} 
+                class="flex-1 flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
+                ${isFull ? 'คลาสเต็ม' : 'เลือกคลาสนี้'}
+              </button>
+            </div>
           </div>
         `;
       });
