@@ -11,7 +11,7 @@
     body { background-color: #f8fafc; }
   </style>
 </head>
-<body class="font-sans text-slate-800 p-4">
+<body class="font-sans text-slate-800 p-4 pb-10">
 
   <!-- Loading State -->
   <div id="loading" class="fixed inset-0 bg-white/80 z-50 flex items-center justify-center">
@@ -59,23 +59,46 @@
     </div>
   </div>
 
-  <!-- VIEW 2: Class List (แสดงเมื่อไม่มีประวัติ) -->
+  <!-- VIEW 2: หมวดหมู่วัน (Day List) -->
+  <div id="dayListView" class="max-w-md mx-auto hidden">
+    <h2 class="text-base font-bold text-slate-800 mb-3 px-1">เลือกวันที่ต้องการเรียน</h2>
+    <div id="dayContainer" class="grid grid-cols-2 gap-3">
+      <!-- ข้อมูลวันจะถูกสร้างที่นี่ -->
+    </div>
+  </div>
+
+  <!-- VIEW 3: Class List (แสดงคลาสของวันที่เลือก) -->
   <div id="classListView" class="max-w-md mx-auto hidden">
-    <div id="classContainer" class="space-y-4"></div>
+    <div class="flex items-center mb-4 px-1">
+      <button onclick="backToDayList()" class="flex items-center text-blue-600 text-sm font-medium hover:text-blue-800 transition mr-3 bg-blue-50 px-3 py-1.5 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        กลับ
+      </button>
+      <h2 id="selectedDayTitle" class="text-base font-bold text-slate-800"></h2>
+    </div>
+    <div id="classContainer" class="space-y-4">
+      <!-- รายการคลาสจะถูกสร้างที่นี่ -->
+    </div>
   </div>
 
   <!-- ฟอร์มจอง (บันทึกอัตโนมัติเมื่อกด Checkbox) -->
-  <div id="bookingForm" class="max-w-md mx-auto mt-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden">
-    <h3 class="font-bold text-lg mb-1 text-slate-800">ยืนยันการจอง</h3>
-    <p id="selectedClassText" class="text-sm text-blue-600 font-medium mb-4"></p>
+  <div id="bookingForm" class="max-w-md mx-auto mt-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden relative overflow-hidden">
+    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg text-slate-800">ยืนยันการจอง</h3>
+      <button onclick="closeForm()" class="text-slate-400 hover:text-red-500 p-1">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+      </button>
+    </div>
+    <p id="selectedClassText" class="text-sm text-blue-600 font-medium mb-4 bg-blue-50 p-2 rounded-lg"></p>
     <input type="hidden" id="selectedClassId">
     
     <input type="text" id="name" placeholder="ชื่อ - นามสกุล" class="w-full mb-3 px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
     <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์ติดต่อ" class="w-full mb-4 px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
     
-    <label class="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50 rounded-xl border border-slate-200">
-      <input type="checkbox" id="consentCheck" onchange="submitNewBooking()" class="mt-0.5 w-5 h-5 text-blue-600 rounded">
-      <span class="text-sm text-slate-600 leading-tight">ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว ยืนยันการจองทันที</span>
+    <label class="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-blue-50 transition">
+      <input type="checkbox" id="consentCheck" onchange="submitNewBooking()" class="mt-0.5 w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+      <span class="text-sm text-slate-600 leading-tight">ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว <span class="font-bold text-blue-700">ยืนยันการจองทันที</span></span>
     </label>
   </div>
 
@@ -87,6 +110,7 @@
 
     let userUid = "";
     let currentBookingId = "";
+    let allClassData = []; // เก็บข้อมูลคลาสทั้งหมดไว้กรองตามวัน
 
     async function main() {
       await liff.init({ liffId: LIFF_ID });
@@ -111,18 +135,96 @@
         const response = await fetch(`${GAS_URL}?uid=${userUid}`);
         const data = await response.json();
         
+        allClassData = data.classes; // เก็บใส่ตัวแปร Global
+
         if (data.booking) {
           showMyBooking(data.booking);
         } else {
-          renderClassList(data.classes);
+          renderDayList(); // เปลี่ยนมาโชว์หน้าเลือกวันเป็นหน้าแรก
         }
       } catch (error) {
-        alert("ไม่สามารถดึงข้อมูลได้");
+        alert("ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
       }
       document.getElementById('loading').style.display = 'none';
     }
 
+    // [ใหม่] ฟังก์ชันดึงวันทั้งหมดมาแสดงเป็น Grid
+    function renderDayList() {
+      document.getElementById('myBookingView').classList.add('hidden');
+      document.getElementById('classListView').classList.add('hidden');
+      document.getElementById('bookingForm').classList.add('hidden');
+      document.getElementById('dayListView').classList.remove('hidden');
+
+      // ดึงรายชื่อวันแบบไม่ซ้ำ (Unique)
+      const uniqueDays = [...new Set(allClassData.map(c => c.date))];
+      
+      let html = '';
+      uniqueDays.forEach(day => {
+        // นับจำนวนคลาสในวันนั้น
+        const classCount = allClassData.filter(c => c.date === day).length;
+        html += `
+          <div onclick="showClassesForDay('${day}')" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-blue-400 transition-all">
+            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2 text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+            </div>
+            <span class="text-sm font-bold text-slate-800">${day}</span>
+            <span class="text-xs text-slate-500 mt-1">${classCount} คลาสเรียน</span>
+          </div>
+        `;
+      });
+      document.getElementById('dayContainer').innerHTML = html;
+    }
+
+    // [ใหม่] ฟังก์ชันแสดงคลาสเรียนของวันที่กดเลือก
+    function showClassesForDay(selectedDay) {
+      document.getElementById('dayListView').classList.add('hidden');
+      document.getElementById('classListView').classList.remove('hidden');
+      document.getElementById('bookingForm').classList.add('hidden');
+      
+      document.getElementById('selectedDayTitle').innerText = `วัน${selectedDay}`;
+
+      // กรองเฉพาะคลาสที่ตรงกับวันที่เลือก
+      const filteredClasses = allClassData.filter(c => c.date === selectedDay);
+      
+      let html = '';
+      filteredClasses.forEach(c => {
+        const isFull = parseInt(c.remaining) <= 0;
+        html += `
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <span class="absolute top-5 right-5 text-xs font-bold ${isFull ? 'text-red-500 bg-red-50' : 'text-blue-600 bg-blue-50'} px-2 py-1 rounded-md">
+              ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
+            </span>
+            <h2 class="text-lg font-bold text-slate-800 pr-16">${c.className}</h2>
+            <p class="text-sm text-slate-500 mt-2 mb-4 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              ${c.time}
+            </p>
+            <button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} 
+              class="w-full flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
+              ${isFull ? 'คลาสเต็ม' : 'เลือกคลาสนี้'}
+            </button>
+          </div>
+        `;
+      });
+      document.getElementById('classContainer').innerHTML = html;
+    }
+
+    // [ใหม่] ปุ่มกลับไปหน้าเลือกวัน
+    function backToDayList() {
+      document.getElementById('classListView').classList.add('hidden');
+      document.getElementById('bookingForm').classList.add('hidden');
+      document.getElementById('dayListView').classList.remove('hidden');
+    }
+
+    // ซ่อนฟอร์มเมื่อกด X (กากบาท)
+    function closeForm() {
+      document.getElementById('bookingForm').classList.add('hidden');
+      document.getElementById('consentCheck').checked = false;
+    }
+
+    // หน้าแสดงการจองปัจจุบัน (My Booking)
     function showMyBooking(booking) {
+      document.getElementById('dayListView').classList.add('hidden');
       document.getElementById('classListView').classList.add('hidden');
       document.getElementById('bookingForm').classList.add('hidden');
       document.getElementById('myBookingView').classList.remove('hidden');
@@ -143,38 +245,22 @@
       }
     }
 
-    function renderClassList(classes) {
-      document.getElementById('myBookingView').classList.add('hidden');
-      document.getElementById('classListView').classList.remove('hidden');
-      
-      let html = '';
-      classes.forEach(c => {
-        const isFull = parseInt(c.remaining) <= 0;
-        html += `
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-            <span class="absolute top-5 right-5 text-xs font-bold ${isFull ? 'text-red-500 bg-red-50' : 'text-blue-600 bg-blue-50'} px-2 py-1 rounded-md">
-              ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
-            </span>
-            <span class="text-xs font-semibold text-slate-500 tracking-wide">${c.date}</span>
-            <h2 class="text-lg font-bold text-slate-800 mt-1">${c.className}</h2>
-            <p class="text-sm text-slate-500 mt-1 mb-4">🕒 ${c.time}</p>
-            <button onclick="openForm('${c.classId}', '${c.className}')" ${isFull ? 'disabled' : ''} 
-              class="w-full ${isFull ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} py-2.5 rounded-xl text-sm font-medium transition">
-              ${isFull ? 'คลาสเต็ม' : 'เลือกคลาสนี้'}
-            </button>
-          </div>
-        `;
-      });
-      document.getElementById('classContainer').innerHTML = html;
-    }
-
-    function openForm(classId, className) {
+    // เปิดฟอร์มจอง
+    function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
-      document.getElementById('selectedClassText').innerText = className;
+      document.getElementById('selectedClassText').innerHTML = `<b>${className}</b><br><span class="text-xs text-blue-500">วัน${date} | ${time}</span>`;
       document.getElementById('bookingForm').classList.remove('hidden');
-      document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
+      
+      // เอาติ๊กออกเสมอเมื่อเปิดฟอร์มใหม่
+      document.getElementById('consentCheck').checked = false;
+      
+      // เลื่อนหน้าจอลงมาที่ฟอร์ม
+      setTimeout(() => {
+        document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
     }
 
+    // สั่งบันทึกการจอง
     async function submitNewBooking() {
       const checkbox = document.getElementById('consentCheck');
       const name = document.getElementById('name').value;
@@ -213,6 +299,12 @@
     async function sendData(payload) {
       try {
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
+        // รีเซ็ตฟอร์ม
+        document.getElementById('name').value = '';
+        document.getElementById('phone').value = '';
+        document.getElementById('consentCheck').checked = false;
+        
+        // โหลดข้อมูลใหม่ (เพื่อโชว์หน้า My Booking)
         fetchData(); 
       } catch (error) {
         alert("เกิดข้อผิดพลาด");
