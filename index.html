@@ -9,7 +9,6 @@
   <style>
     ::-webkit-scrollbar { display: none; }
     body { background-color: #f8fafc; }
-    /* ปรับแต่งปฏิทินเล็กน้อยให้ดูคลีน */
     input[type="date"]::-webkit-calendar-picker-indicator {
       cursor: pointer;
       opacity: 0.6;
@@ -217,9 +216,15 @@
       let html = '';
       filteredClasses.forEach(c => {
         const isFull = parseInt(c.remaining) <= 0;
+        
+        // ปรับแก้ตรงนี้: เปลี่ยนพื้นหลังสีเขียว ตัวอักษรสีขาว เมื่อคลาสยังว่าง
+        const badgeClass = isFull 
+          ? 'text-red-500 bg-red-50' 
+          : 'text-white bg-green-500';
+          
         html += `
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-            <span class="absolute top-5 right-5 text-xs font-bold ${isFull ? 'text-red-500 bg-red-50' : 'text-blue-600 bg-blue-50'} px-2 py-1 rounded-md">
+            <span class="absolute top-5 right-5 text-xs font-bold ${badgeClass} px-2 py-1 rounded-md shadow-sm">
               ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
             </span>
             <h2 class="text-lg font-bold text-slate-800 pr-16">${c.className}</h2>
@@ -248,7 +253,6 @@
       document.getElementById('consentCheck').checked = false;
     }
 
-    // แปลงรูปแบบวันที่ให้อ่านง่าย (จาก YYYY-MM-DD เป็น DD/MM/YYYY)
     function formatThaiDate(dateStr) {
       if(!dateStr || !dateStr.includes('-')) return dateStr;
       const parts = dateStr.split('-'); 
@@ -265,13 +269,11 @@
       document.getElementById('bName').innerText = booking.name;
       document.getElementById('bClassName').innerText = booking.className;
       
-      // แสดงวันที่เรียนที่ลูกค้าเลือก
       let showDate = booking.bookingDate === "ไม่ระบุ" ? booking.dayOfWeek : formatThaiDate(booking.bookingDate);
       document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
       
       document.getElementById('editName').value = booking.name;
-      // ตัดตัว ' ออก (ถ้ามี) เวลาเอาเบอร์มาโชว์ในช่องแก้ไข
       let cleanPhone = booking.phone ? booking.phone.replace(/'/g, "") : "";
       document.getElementById('editPhone').value = cleanPhone;
 
@@ -288,7 +290,6 @@
       document.getElementById('selectedClassId').value = classId;
       document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">หมวดวัน${date} | ${time}</span><b class="text-base text-blue-800">${className}</b>`;
       
-      // รีเซ็ตข้อมูลในฟอร์มทุกครั้งที่เปิด
       document.getElementById('name').value = '';
       document.getElementById('phone').value = '';
       document.getElementById('bookingDate').value = '';
@@ -296,7 +297,6 @@
 
       document.getElementById('bookingForm').classList.remove('hidden');
       
-      // เลื่อนจอลงมาที่ฟอร์ม
       setTimeout(() => {
         document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth', block: 'end' });
       }, 100);
@@ -308,11 +308,10 @@
       const phone = document.getElementById('phone').value;
       const bookingDate = document.getElementById('bookingDate').value;
       
-      // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
       if(checkbox.checked) {
         if(!name || !phone || !bookingDate) {
           alert("กรุณากรอก ชื่อ เบอร์โทร และ เลือกวันที่ต้องการเรียน ให้ครบถ้วนครับ"); 
-          checkbox.checked = false; // เอาเครื่องหมายถูกออก
+          checkbox.checked = false; 
           return;
         }
         
@@ -352,7 +351,7 @@
     async function sendData(payload) {
       try {
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
-        fetchData(); // ดึงข้อมูลใหม่เพื่อไปแสดงหน้า My Booking
+        fetchData(); 
       } catch (error) {
         alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
         document.getElementById('loading').style.display = 'none';
