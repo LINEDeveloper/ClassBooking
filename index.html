@@ -9,6 +9,15 @@
   <style>
     ::-webkit-scrollbar { display: none; }
     body { background-color: #f8fafc; }
+    /* ปรับแต่งปฏิทินเล็กน้อยให้ดูคลีน */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: 0.2s;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 p-4 pb-10">
@@ -90,27 +99,40 @@
     <div id="classContainer" class="space-y-4"></div>
   </div>
 
-  <!-- ฟอร์มจอง -->
+  <!-- VIEW 4: ฟอร์มจองแบบกรอกข้อมูลและเลือกวัน -->
   <div id="bookingForm" class="max-w-md mx-auto mt-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden relative overflow-hidden">
     <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
     <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg text-slate-800">ยืนยันการจอง</h3>
+      <h3 class="font-bold text-lg text-slate-800">ข้อมูลสำหรับยืนยันการจอง</h3>
       <button onclick="closeForm()" class="text-slate-400 hover:text-red-500 p-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
       </button>
     </div>
-    <p id="selectedClassText" class="text-sm text-blue-600 font-medium mb-4 bg-blue-50 p-2 rounded-lg"></p>
+    
+    <!-- สรุปคลาสที่เลือก -->
+    <p id="selectedClassText" class="text-sm text-blue-600 font-medium mb-5 bg-blue-50 p-3 rounded-lg border border-blue-100"></p>
     <input type="hidden" id="selectedClassId">
     
-    <input type="text" id="name" placeholder="ชื่อ - นามสกุล" class="w-full mb-3 px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-    <input type="tel" id="phone" placeholder="เบอร์โทรศัพท์ติดต่อ" class="w-full mb-3 px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
-    
-    <!-- ฟิลด์เลือกวันที่เรียนเพิ่มเข้ามา -->
-    <div class="mb-4">
-      <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">เลือกวันที่ต้องการเรียน (วัน/เดือน/ปี)</label>
-      <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+    <!-- ช่องกรอกข้อมูล -->
+    <div class="space-y-3 mb-5">
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">ชื่อ - นามสกุล</label>
+        <input type="text" id="name" placeholder="ระบุชื่อ-สกุล" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+      </div>
+      
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">เบอร์โทรศัพท์</label>
+        <input type="tel" id="phone" placeholder="ระบุเบอร์ติดต่อ (เช่น 0812345678)" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+      </div>
+      
+      <!-- จุดที่เพิ่มให้เลือกวันที่เรียนชัดเจนขึ้น -->
+      <div>
+        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1 text-blue-600">เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *</label>
+        <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border border-blue-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+      </div>
     </div>
     
+    <!-- ปุ่มยืนยันแบบ Checkbox -->
     <label class="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-blue-50 transition">
       <input type="checkbox" id="consentCheck" onchange="submitNewBooking()" class="mt-0.5 w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
       <span class="text-sm text-slate-600 leading-tight">ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว <span class="font-bold text-blue-700">ยืนยันการจองทันที</span></span>
@@ -226,10 +248,10 @@
       document.getElementById('consentCheck').checked = false;
     }
 
-    // ฟังก์ชันสำหรับแปลง Format วันที่ให้อ่านง่าย
+    // แปลงรูปแบบวันที่ให้อ่านง่าย (จาก YYYY-MM-DD เป็น DD/MM/YYYY)
     function formatThaiDate(dateStr) {
       if(!dateStr || !dateStr.includes('-')) return dateStr;
-      const parts = dateStr.split('-'); // 2026-03-25
+      const parts = dateStr.split('-'); 
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
@@ -242,10 +264,16 @@
       currentBookingId = booking.bookingId;
       document.getElementById('bName').innerText = booking.name;
       document.getElementById('bClassName').innerText = booking.className;
-      document.getElementById('bSpecificDate').innerText = formatThaiDate(booking.bookingDate);
+      
+      // แสดงวันที่เรียนที่ลูกค้าเลือก
+      let showDate = booking.bookingDate === "ไม่ระบุ" ? booking.dayOfWeek : formatThaiDate(booking.bookingDate);
+      document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
+      
       document.getElementById('editName').value = booking.name;
-      document.getElementById('editPhone').value = booking.phone.replace("'", ""); // เอา ' ออกตอนแสดงในฟอร์มแก้ไข
+      // ตัดตัว ' ออก (ถ้ามี) เวลาเอาเบอร์มาโชว์ในช่องแก้ไข
+      let cleanPhone = booking.phone ? booking.phone.replace(/'/g, "") : "";
+      document.getElementById('editPhone').value = cleanPhone;
 
       const statusBadge = document.getElementById('bookingStatus');
       statusBadge.innerText = booking.status;
@@ -258,15 +286,17 @@
 
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
-      document.getElementById('selectedClassText').innerHTML = `<b>${className}</b><br><span class="text-xs text-blue-500">${date} | ${time}</span>`;
+      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">หมวดวัน${date} | ${time}</span><b class="text-base text-blue-800">${className}</b>`;
       
-      // ล้างข้อมูลฟอร์มเก่าออก
+      // รีเซ็ตข้อมูลในฟอร์มทุกครั้งที่เปิด
       document.getElementById('name').value = '';
       document.getElementById('phone').value = '';
       document.getElementById('bookingDate').value = '';
       document.getElementById('consentCheck').checked = false;
 
       document.getElementById('bookingForm').classList.remove('hidden');
+      
+      // เลื่อนจอลงมาที่ฟอร์ม
       setTimeout(() => {
         document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth', block: 'end' });
       }, 100);
@@ -278,12 +308,14 @@
       const phone = document.getElementById('phone').value;
       const bookingDate = document.getElementById('bookingDate').value;
       
+      // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
       if(checkbox.checked) {
         if(!name || !phone || !bookingDate) {
-          alert("กรุณากรอกชื่อ เบอร์โทร และวันที่ต้องการเรียนให้ครบถ้วน"); 
-          checkbox.checked = false; 
+          alert("กรุณากรอก ชื่อ เบอร์โทร และ เลือกวันที่ต้องการเรียน ให้ครบถ้วนครับ"); 
+          checkbox.checked = false; // เอาเครื่องหมายถูกออก
           return;
         }
+        
         document.getElementById('loading').style.display = 'flex';
         const payload = { 
           action: "book", 
@@ -320,9 +352,9 @@
     async function sendData(payload) {
       try {
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
-        fetchData(); 
+        fetchData(); // ดึงข้อมูลใหม่เพื่อไปแสดงหน้า My Booking
       } catch (error) {
-        alert("เกิดข้อผิดพลาด");
+        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
         document.getElementById('loading').style.display = 'none';
       }
     }
