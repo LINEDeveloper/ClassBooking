@@ -83,7 +83,7 @@
   <!-- VIEW 2: หมวดหมู่วัน (Day List - แบบตาราง Grid) -->
   <div id="dayListView" class="max-w-md mx-auto hidden">
     <h2 class="text-base font-bold text-slate-800 mb-3 px-1">เลือกวันที่ต้องการเรียน</h2>
-    <div id="dayContainer" class="grid grid-cols-2 gap-3"></div>
+    <div id="dayContainer" class="grid grid-cols-2 gap-3 w-full"></div>
   </div>
 
   <!-- VIEW 3: Class List (แสดงคลาสของวันที่เลือก) -->
@@ -124,7 +124,6 @@
         <input type="tel" id="phone" placeholder="ระบุเบอร์ติดต่อ (เช่น 0812345678)" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
       </div>
       
-      <!-- จุดที่เพิ่มให้เลือกวันที่เรียนชัดเจนขึ้น -->
       <div>
         <label class="block text-xs font-medium text-slate-500 mb-1 ml-1 text-blue-600">เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *</label>
         <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border border-blue-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
@@ -192,14 +191,15 @@
       let html = '';
       uniqueDays.forEach(day => {
         const classCount = allClassData.filter(c => c.date === day).length;
-        // ปรับ CSS ตรงนี้: เพิ่ม overflow-hidden, break-words, px-2 เพื่อไม่ให้ตัวหนังสือขาดหรือล้นกรอบ
+        
+        // ปรับ CSS ตรงนี้: ใช้ min-w-0 ป้องกันการทะลุกรอบ และปรับ padding ให้สมดุลขึ้น
         html += `
-          <div onclick="showClassesForDay('${day}')" class="bg-white p-3 py-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-blue-400 transition-all overflow-hidden">
-            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2 text-blue-600 shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          <div onclick="showClassesForDay('${day}')" class="min-w-0 bg-white py-4 px-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-blue-400 transition-all text-center">
+            <div class="w-11 h-11 bg-blue-50 rounded-full flex items-center justify-center mb-2 text-blue-600 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            <span class="text-sm font-bold text-slate-800 text-center break-words leading-tight w-full px-1">${day}</span>
-            <span class="text-xs text-slate-500 mt-1 whitespace-nowrap">${classCount} คลาสเรียน</span>
+            <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${day}</span>
+            <span class="text-xs text-slate-500 mt-1">${classCount} คลาสเรียน</span>
           </div>
         `;
       });
@@ -289,7 +289,7 @@
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
       
-      // ปรับแก้ตรงนี้: ลบคำว่า "หมวดวัน" ออก เหลือแค่วันที่และเวลา
+      // ปรับแก้: ลบคำว่า หมวดวัน ออกแล้ว
       document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${date} | ${time}</span><b class="text-base text-blue-800">${className}</b>`;
       
       document.getElementById('name').value = '';
