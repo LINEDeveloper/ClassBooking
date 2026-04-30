@@ -17,13 +17,29 @@
     input[type="date"]::-webkit-calendar-picker-indicator:hover {
       opacity: 1;
     }
+    
+    /* Custom Loader ตามที่คุณระบุ (เปลี่ยนสีเป็นน้ำเงิน #2563eb ให้เข้ากับธีม) */
+    .loader {
+      width: 40px;
+      aspect-ratio: 1.154;
+      --_g: no-repeat radial-gradient(farthest-side, #2563eb 90%, #0000);
+      background: 
+        var(--_g) 50%  0,
+        var(--_g) 0    100%,
+        var(--_g) 100% 100%;
+      background-size: 35% calc(35%*1.154);
+      animation: l16 1s infinite;
+    }
+    @keyframes l16{ 
+        50%,100% {background-position: 100% 100%,50% 0,0 100%} 
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 p-4 pb-24"> 
 
-  <!-- Loading State -->
+  <!-- Loading State (เปลี่ยนใช้ .loader) -->
   <div id="loading" class="fixed inset-0 bg-white/80 z-50 flex items-center justify-center">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <div class="loader"></div>
   </div>
 
   <!-- Toast Notification -->
@@ -204,7 +220,7 @@
     let userUid = "";
     let currentBookingId = "";
     let allClassData = []; 
-    let myBookingsData = []; // เปลี่ยนเป็น Array เพื่อรองรับหลายคลาส
+    let myBookingsData = []; 
     
     // ตัวแปรสำหรับ Auto-Fill ข้อมูลเดิม
     let savedName = "";
@@ -234,7 +250,6 @@
         const data = await response.json();
         allClassData = data.classes; 
         
-        // รองรับระบบหลังบ้านที่ส่งกลับมาเป็น array (bookings) หรือ object (booking)
         if (data.bookings && data.bookings.length > 0) {
           myBookingsData = data.bookings;
         } else if (data.booking) {
@@ -244,12 +259,11 @@
         }
 
         if (myBookingsData.length > 0) {
-          // เก็บข้อมูล Name / Phone ไว้เผื่อทำ Auto-Fill ตอนจองคลาสถัดไป
           savedName = myBookingsData[0].name;
           let cleanPhone = myBookingsData[0].phone ? myBookingsData[0].phone.replace(/'/g, "") : "";
           savedPhone = cleanPhone;
           
-          document.getElementById('navBadge').classList.remove('hidden'); // มีคลาส โชว์จุดแดง
+          document.getElementById('navBadge').classList.remove('hidden');
           switchTab('mybooking'); 
         } else {
           savedName = "";
@@ -290,14 +304,12 @@
         document.getElementById('bookingForm').classList.add('hidden');
         document.getElementById('myBookingView').classList.remove('hidden');
         
-        // --- UX แสดงข้อมูลการจองของฉัน ---
         if(myBookingsData.length === 0) {
           document.getElementById('emptyBookingState').classList.remove('hidden');
           document.getElementById('myBookingsListState').classList.add('hidden');
           document.getElementById('detailViewWrapper').classList.add('hidden');
         } 
         else if (myBookingsData.length === 1) {
-          // ถ้ามี 1 คลาส ให้ข้ามไปโชว์รายละเอียดเลย (ซ่อนปุ่มกลับหน้ารวม)
           document.getElementById('emptyBookingState').classList.add('hidden');
           document.getElementById('myBookingsListState').classList.add('hidden');
           document.getElementById('detailViewWrapper').classList.remove('hidden');
@@ -305,7 +317,6 @@
           setupMyBookingData(myBookingsData[0]);
         } 
         else {
-          // ถ้ามี > 1 คลาส โชว์หน้ารวม (List View)
           document.getElementById('emptyBookingState').classList.add('hidden');
           document.getElementById('detailViewWrapper').classList.add('hidden');
           document.getElementById('myBookingsListState').classList.remove('hidden');
@@ -314,7 +325,6 @@
       }
     }
 
-    // --- ฟังก์ชันสร้าง List หน้ารวม (เวลาจองมากกว่า 1 คลาส) ---
     function renderBookingsList() {
       document.getElementById('bookingCountBadge').innerText = `${myBookingsData.length} คลาส`;
       let html = '';
@@ -342,17 +352,15 @@
       document.getElementById('bookingsContainer').innerHTML = html;
     }
 
-    // กดเข้าดูรายละเอียดจากหน้ารวม
     function showBookingDetail(bookingId) {
       document.getElementById('myBookingsListState').classList.add('hidden');
       document.getElementById('detailViewWrapper').classList.remove('hidden');
-      document.getElementById('btnBackToListContainer').classList.remove('hidden'); // แสดงปุ่มกลับ
+      document.getElementById('btnBackToListContainer').classList.remove('hidden');
 
       const booking = myBookingsData.find(b => b.bookingId === bookingId);
       if(booking) setupMyBookingData(booking);
     }
 
-    // กดย้อนกลับไปหน้ารวม
     function showBookingsList() {
       document.getElementById('detailViewWrapper').classList.add('hidden');
       document.getElementById('myBookingsListState').classList.remove('hidden');
@@ -453,14 +461,13 @@
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
       }
-      document.getElementById('editForm').classList.add('hidden'); // ซ่อนฟอร์มแก้ไว้เสมอตอนโหลด
+      document.getElementById('editForm').classList.add('hidden'); 
     }
 
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
       document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${date} | ${time}</span><b class="text-base text-blue-800">${className}</b>`;
       
-      // AUTO-FILL ข้อมูล ชื่อและเบอร์โทร (ถ้าลูกค้าเคยจองไว้แล้ว)
       document.getElementById('name').value = savedName;
       document.getElementById('phone').value = savedPhone;
       document.getElementById('bookingDate').value = '';
