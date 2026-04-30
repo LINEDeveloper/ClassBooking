@@ -152,13 +152,32 @@
             </button>
           </div>
           
-          <div id="editForm" class="hidden space-y-3 mb-5 p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <p class="text-xs font-bold text-blue-800 mb-2">โหมดแก้ไขข้อมูล</p>
-            <input type="text" id="editName" class="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="ชื่อ-สกุล">
-            <input type="tel" id="editPhone" class="w-full px-4 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="เบอร์โทร">
-            <div class="flex gap-2 mt-2">
-              <button onclick="toggleEdit()" class="flex-1 bg-white border border-slate-300 text-slate-600 py-2 rounded-lg text-sm font-medium">ยกเลิก</button>
-              <button onclick="saveEdit()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium">บันทึก</button>
+          <!-- [อัปเดต] ฟอร์มแก้ไขข้อมูลที่สามารถเลือก วัน/เวลา และ วันที่ปฏิทิน ได้ -->
+          <div id="editForm" class="hidden space-y-4 mb-5 p-5 bg-blue-50 rounded-xl border border-blue-100">
+            <p class="text-sm font-bold text-blue-800 border-b border-blue-200 pb-2">แก้ไขข้อมูลการจอง</p>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">ชื่อ-สกุล</label>
+                <input type="text" id="editName" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="ชื่อ-สกุล">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">เบอร์โทร</label>
+                <input type="tel" id="editPhone" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="เบอร์โทร">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">เลือกตารางเรียน (วัน และ เวลา)</label>
+                <select id="editClassSchedule" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">วันที่เข้าเรียน (ปฏิทิน)</label>
+                <input type="date" id="editBookingDate" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+            </div>
+
+            <div class="flex gap-2 mt-4 pt-2">
+              <button onclick="toggleEdit()" class="flex-1 bg-white border border-blue-200 text-slate-600 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50 transition">ยกเลิก</button>
+              <button onclick="saveEdit()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">บันทึกข้อมูล</button>
             </div>
           </div>
 
@@ -197,7 +216,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (ปรับให้จัดกึ่งกลางและไม่ทะลุขอบบน PC) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-white border-t border-slate-200 flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_15px_rgba(0,0,0,0.03)] z-40">
     <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-blue-600 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -219,7 +238,7 @@
     let userUid = "";
     let currentBookingId = "";
     let allClassData = []; 
-    let myBookingData = null; 
+    let myBookingsData = []; 
 
     // ตัวแปร Auto-Fill
     let savedName = "";
@@ -256,7 +275,6 @@
           bookingsArr = [data.booking];
         }
 
-        // เซ็ตตัวแปรโกลบอลให้ฟังก์ชันอื่นเรียกใช้
         myBookingsData = bookingsArr;
 
         if (bookingsArr.length > 0) {
@@ -447,9 +465,23 @@
       document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
       
+      // ข้อมูลสำหรับฟอร์มแก้ไข
       document.getElementById('editName').value = booking.name;
       let cleanPhone = booking.phone ? booking.phone.replace(/'/g, "") : "";
       document.getElementById('editPhone').value = cleanPhone;
+      document.getElementById('editBookingDate').value = booking.bookingDate || "";
+
+      // [อัปเดต] ดึงข้อมูลวัน/เวลาของคลาสนี้ทั้งหมดมาใส่ใน Dropdown เลือกเวลาแก้ไข
+      const scheduleSelect = document.getElementById('editClassSchedule');
+      scheduleSelect.innerHTML = '';
+      const relatedClasses = allClassData.filter(c => c.className === booking.className);
+      relatedClasses.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.classId;
+        option.text = `วัน${c.date} | ${c.time}`;
+        if (c.classId === booking.classId) option.selected = true; // เลือกเวลาปัจจุบันของคลาสเป็นค่าเริ่มต้น
+        scheduleSelect.appendChild(option);
+      });
 
       const statusBadge = document.getElementById('bookingStatus');
       statusBadge.innerText = booking.status;
@@ -506,7 +538,7 @@
           return;
         }
 
-        // --- ระบบเช็คคลาสเรียนซ้ำ ---
+        // --- ระบบเช็คคลาสเรียนซ้ำ (ตอนจองใหม่) ---
         const selectedClass = allClassData.find(c => c.classId === classId);
         if (selectedClass) {
           const isDuplicate = myBookingsData.some(b => 
@@ -521,7 +553,6 @@
             return;
           }
         }
-        // --- สิ้นสุดการเช็ค ---
         
         document.getElementById('loading').style.display = 'flex';
         const payload = { 
@@ -544,13 +575,32 @@
     async function saveEdit() {
       const name = document.getElementById('editName').value;
       const phone = document.getElementById('editPhone').value;
-      if(!name || !phone) return alert("กรุณากรอกข้อมูลให้ครบ");
+      const classId = document.getElementById('editClassSchedule').value;
+      const bookingDate = document.getElementById('editBookingDate').value;
+
+      if(!name || !phone || !bookingDate) return alert("กรุณากรอกข้อมูล วันที่และเวลา ให้ครบถ้วน");
+
+      // --- ระบบเช็คคลาสเรียนซ้ำ (ตอนแก้ไขข้อมูล) ข้ามตัวคลาสที่กำลังแก้ ---
+      const selectedClass = allClassData.find(c => c.classId === classId);
+      if (selectedClass) {
+        const isDuplicate = myBookingsData.some(b => 
+          b.bookingId !== currentBookingId && 
+          b.className === selectedClass.className && 
+          b.time === selectedClass.time && 
+          b.bookingDate === bookingDate
+        );
+
+        if (isDuplicate) {
+          alert("คุณมีคลาสเรียนเวลาดังกล่าวแล้ว");
+          return;
+        }
+      }
       
       document.getElementById('loading').style.display = 'flex';
       try {
         await fetch(GAS_URL, { 
           method: "POST", 
-          body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone }) 
+          body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) 
         });
         
         await fetchData(); 
