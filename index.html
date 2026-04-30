@@ -497,6 +497,7 @@
       const name = document.getElementById('name').value;
       const phone = document.getElementById('phone').value;
       const bookingDate = document.getElementById('bookingDate').value;
+      const classId = document.getElementById('selectedClassId').value;
       
       if(checkbox.checked) {
         if(!name || !phone || !bookingDate) {
@@ -504,6 +505,23 @@
           checkbox.checked = false; 
           return;
         }
+
+        // --- ระบบเช็คคลาสเรียนซ้ำ ---
+        const selectedClass = allClassData.find(c => c.classId === classId);
+        if (selectedClass) {
+          const isDuplicate = myBookingsData.some(b => 
+            b.className === selectedClass.className && 
+            b.time === selectedClass.time && 
+            b.bookingDate === bookingDate
+          );
+
+          if (isDuplicate) {
+            alert("คุณมีคลาสเรียนเวลาดังกล่าวแล้ว");
+            checkbox.checked = false;
+            return;
+          }
+        }
+        // --- สิ้นสุดการเช็ค ---
         
         document.getElementById('loading').style.display = 'flex';
         const payload = { 
@@ -512,7 +530,7 @@
           name: name, 
           phone: phone, 
           bookingDate: bookingDate, 
-          classId: document.getElementById('selectedClassId').value 
+          classId: classId 
         };
         await sendData(payload);
       }
