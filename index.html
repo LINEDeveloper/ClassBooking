@@ -275,7 +275,6 @@
           bookingsArr = [data.booking];
         }
 
-        // เซ็ตตัวแปรโกลบอลให้ฟังก์ชันอื่นเรียกใช้
         myBookingsData = bookingsArr;
 
         if (bookingsArr.length > 0) {
@@ -466,13 +465,11 @@
       document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
       
-      // ฟอร์มแก้ไขข้อมูล
       document.getElementById('editName').value = booking.name;
       let cleanPhone = booking.phone ? booking.phone.replace(/'/g, "") : "";
       document.getElementById('editPhone').value = cleanPhone;
       document.getElementById('editBookingDate').value = booking.bookingDate || "";
 
-      // ใส่ตัวเลือกตารางเรียนลงใน Dropdown ให้ตรงกับคลาสที่จองไว้
       const scheduleSelect = document.getElementById('editClassSchedule');
       scheduleSelect.innerHTML = '';
       const relatedClasses = allClassData.filter(c => c.className === booking.className);
@@ -539,21 +536,26 @@
           return;
         }
 
-        // --- ระบบเช็ควันที่ให้ตรงกับวันในคลาส ---
+        // --- ระบบเช็ควันที่และคลาสเรียนซ้ำแบบรองรับ ไทย-อังกฤษ ---
         const selectedClass = allClassData.find(c => c.classId === classId);
         if (selectedClass) {
           const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-          const d = new Date(bookingDate);
-          const dayName = daysThai[d.getDay()];
-          const classDayStr = selectedClass.date.replace('วัน', '').trim();
+          const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
           
-          if (!dayName.includes(classDayStr) && !classDayStr.includes(dayName)) {
+          const d = new Date(bookingDate);
+          const dayIndex = d.getDay();
+          const dayNameThai = daysThai[dayIndex];
+          const dayNameEng = daysEng[dayIndex];
+          
+          const classDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
+          
+          if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
+              !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
             alert(`วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน${selectedClass.date}) กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ`);
             checkbox.checked = false;
             return;
           }
           
-          // --- ระบบเช็คคลาสเรียนซ้ำ (ตอนจองใหม่) ---
           const isDuplicate = myBookingsData.some(b => 
             b.className === selectedClass.className && 
             b.time === selectedClass.time && 
@@ -593,22 +595,25 @@
 
       if(!name || !phone || !bookingDate) return alert("กรุณากรอกข้อมูล วันที่และเวลา ให้ครบถ้วน");
 
-      // --- ตรวจสอบเงื่อนไขตอนแก้ไข ---
+      // --- ระบบเช็ควันที่และคลาสเรียนซ้ำตอนแก้ไขแบบรองรับ ไทย-อังกฤษ ---
       const selectedClass = allClassData.find(c => c.classId === classId);
       if (selectedClass) {
-        
-        // 1. ระบบเช็ควันที่ในปฏิทินให้ตรงกับวันในคลาส
         const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-        const d = new Date(bookingDate);
-        const dayName = daysThai[d.getDay()];
-        const classDayStr = selectedClass.date.replace('วัน', '').trim();
+        const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         
-        if (!dayName.includes(classDayStr) && !classDayStr.includes(dayName)) {
+        const d = new Date(bookingDate);
+        const dayIndex = d.getDay();
+        const dayNameThai = daysThai[dayIndex];
+        const dayNameEng = daysEng[dayIndex];
+        
+        const classDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
+        
+        if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
+            !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
           alert(`วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน${selectedClass.date}) กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ`);
           return;
         }
 
-        // 2. ระบบเช็คคลาสเรียนซ้ำ (ข้ามตัวคลาสที่กำลังแก้อยู่)
         const isDuplicate = myBookingsData.some(b => 
           b.bookingId !== currentBookingId && 
           b.className === selectedClass.className && 
