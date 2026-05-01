@@ -5,33 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบเช็คอิน YOKA</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- ต้องมี LIFF SDK -->
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    /* เพิ่มเอฟเฟกต์เด้งเบาๆ ตอนแสดงข้อความสำเร็จ */
+    @keyframes popIn {
+      0% { transform: scale(0.95); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop-in {
+      animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
 </head>
-<body class="bg-slate-50 flex flex-col items-center justify-center min-h-screen p-4 text-center">
+<body class="bg-slate-50 flex flex-col items-center justify-center min-h-screen p-4 text-center font-sans">
 
-  <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-sm w-full">
-    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-600">
-      <!-- ไอคอน QR Code -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-      </svg>
-    </div>
-    <h1 class="text-xl font-bold text-slate-800 mb-2">สแกนเช็คอิน</h1>
-    <p class="text-sm text-slate-500 mb-6">กดปุ่มด้านล่างเพื่อเปิดกล้อง และสแกน QR Code จากมือถือลูกค้า</p>
+  <!-- ฝังไฟล์เสียงสำหรับแจ้งเตือน (สามารถเปลี่ยนลิงก์ .mp3 เป็นเสียงอื่นได้) -->
+  <audio id="soundSuccess" src="https://assets.mixkit.co/active_storage/sfx/2574/2574-preview.mp3" preload="auto"></audio>
+  <audio id="soundError" src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" preload="auto"></audio>
+
+  <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 max-w-sm w-full transition-all duration-300">
     
-    <button id="btnScan" onclick="startScan()" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-50 hidden">
+    <!-- ส่วนหัวก่อนสแกน (จะถูกซ่อนเมื่อสแกนสำเร็จ) -->
+    <div id="defaultHeader" class="transition-opacity duration-300">
+      <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-500 border border-pink-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+      </div>
+      <h1 class="text-xl font-bold text-slate-800 mb-1">สแกนเช็คอินเข้าคลาส</h1>
+      <p class="text-sm text-slate-500 mb-6">สแกน QR Code จาก E-Ticket ของลูกค้า</p>
+    </div>
+    
+    <button id="btnScan" onclick="startScan()" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium py-3.5 rounded-2xl shadow-sm hover:opacity-90 transition disabled:opacity-50 hidden active:scale-95">
       เปิดกล้องสแกน
     </button>
 
-    <!-- แจ้งเตือนสถานะ -->
-    <div id="statusMessage" class="mt-4 text-sm font-medium hidden p-3 rounded-lg"></div>
+    <!-- พื้นที่แสดงผลลัพธ์ (สำเร็จ / กำลังโหลด / ผิดพลาด) -->
+    <div id="statusMessage" class="hidden w-full"></div>
+    
   </div>
 
   <script>
     // ==========================================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec"; // URL ของ Web App คุณ
-    const LIFF_ID_SCAN = "2009934915-pRcpS1i7"; // แนะนำให้สร้าง LIFF ID แยกสำหรับหน้านี้
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec"; // ใช้ Web App URL เดิม
+    const LIFF_ID_SCAN = "2009934915-pRcpS1i7"; // ใส่ LIFF ID สำหรับหน้านี้
     // ==========================================
 
     async function main() {
@@ -50,49 +67,100 @@
           const result = await liff.scanCodeV2();
           if (result && result.value) {
             const bookingId = result.value;
-            showMessage("กำลังอัปเดตข้อมูล รหัส: " + bookingId + "...", "yellow");
+            renderUI('loading', { message: "กำลังตรวจสอบรหัส..." });
             await sendCheckIn(bookingId);
           }
         } catch (err) {
-          showMessage("การสแกนถูกยกเลิก หรือเกิดข้อผิดพลาด", "red");
+          renderUI('error', { message: "ยกเลิกการสแกน หรือเกิดข้อผิดพลาด" });
         }
       } else {
-        showMessage("แอป LINE ของคุณไม่รองรับการสแกน", "red");
+        renderUI('error', { message: "แอป LINE ของคุณไม่รองรับการสแกน" });
       }
     }
 
     async function sendCheckIn(bookingId) {
       document.getElementById('btnScan').disabled = true;
       try {
-        const payload = {
-          action: "checkin",
-          bookingId: bookingId
-        };
+        const payload = { action: "checkin", bookingId: bookingId };
+        
         const response = await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
+        
         const result = await response.json();
 
         if (result.success) {
-          showMessage("✅ เช็คอินสำเร็จ! (" + result.name + ")", "green");
+          renderUI('success', { name: result.name });
         } else {
-          showMessage("❌ รหัสไม่ถูกต้อง หรือเช็คอินไปแล้ว", "red");
+          renderUI('error', { message: result.message || "รหัสไม่ถูกต้อง หรือเช็คอินไปแล้ว" });
         }
       } catch (error) {
-        showMessage("❌ การเชื่อมต่อผิดพลาด", "red");
+        renderUI('error', { message: "การเชื่อมต่อผิดพลาด กรุณาลองใหม่" });
       }
       setTimeout(() => { document.getElementById('btnScan').disabled = false; }, 2000);
     }
 
-    function showMessage(text, color) {
+    // ฟังก์ชันจัดการหน้าตา UI สวยๆ
+    function renderUI(type, data) {
       const msgDiv = document.getElementById('statusMessage');
-      msgDiv.innerText = text;
-      msgDiv.className = "mt-4 text-sm font-medium p-3 rounded-lg"; // รีเซ็ตคลาส
-      if (color === 'green') msgDiv.classList.add("bg-green-100", "text-green-700");
-      if (color === 'red') msgDiv.classList.add("bg-red-100", "text-red-700");
-      if (color === 'yellow') msgDiv.classList.add("bg-yellow-100", "text-yellow-700");
+      const defaultHeader = document.getElementById('defaultHeader');
+      
       msgDiv.classList.remove('hidden');
+
+      if (type === 'loading') {
+        defaultHeader.classList.add('hidden');
+        msgDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-6 animate-pop-in">
+             <div class="w-10 h-10 border-4 border-pink-100 border-t-pink-500 rounded-full animate-spin mb-4"></div>
+             <p class="text-sm font-medium text-slate-600">${data.message}</p>
+          </div>
+        `;
+      } 
+      else if (type === 'success') {
+        defaultHeader.classList.add('hidden');
+        document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
+        
+        // ดึงเวลาปัจจุบันเพื่อแสดงผล
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' น.';
+
+        // เล่นเสียงสำเร็จ
+        document.getElementById('soundSuccess').play().catch(() => {});
+
+        msgDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
+            <div class="w-16 h-16 bg-[#f0fdf4] text-[#22c55e] rounded-full flex items-center justify-center text-4xl font-light mb-4 shadow-sm border border-[#bbf7d0]">
+              ✓
+            </div>
+            <p class="text-[17px] font-bold text-slate-800 mb-2">คุณได้ลงทะเบียนเข้าเรียนแล้ว</p>
+            <div class="inline-block bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full mb-5">
+              <p class="text-sm font-medium text-pink-600">เวลาเข้าเรียน: ${timeString}</p>
+            </div>
+            <div class="w-full pt-4 border-t border-slate-100 flex justify-between items-center px-2">
+              <span class="text-xs text-slate-400">ชื่อลูกค้า</span>
+              <span class="text-sm font-bold text-slate-700">${data.name}</span>
+            </div>
+          </div>
+        `;
+      } 
+      else if (type === 'error') {
+        defaultHeader.classList.add('hidden');
+        document.getElementById('btnScan').innerText = "ลองสแกนใหม่อีกครั้ง";
+        
+        // เล่นเสียงผิดพลาด
+        document.getElementById('soundError').play().catch(() => {});
+
+        msgDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
+            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl font-light mb-4 border border-red-100">
+              ✕
+            </div>
+            <p class="text-base font-bold text-slate-800 mb-1">ไม่สามารถเช็คอินได้</p>
+            <p class="text-sm text-slate-500">${data.message}</p>
+          </div>
+        `;
+      }
     }
   </script>
 </body>
