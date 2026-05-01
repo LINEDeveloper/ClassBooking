@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    /* เพิ่มเอฟเฟกต์เด้งเบาๆ ตอนแสดงข้อความสำเร็จ */
     @keyframes popIn {
       0% { transform: scale(0.95); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
@@ -19,13 +18,11 @@
 </head>
 <body class="bg-slate-50 flex flex-col items-center justify-center min-h-screen p-4 text-center font-sans">
 
-  <!-- ฝังไฟล์เสียงสำหรับแจ้งเตือน (สามารถเปลี่ยนลิงก์ .mp3 เป็นเสียงอื่นได้) -->
   <audio id="soundSuccess" src="https://assets.mixkit.co/active_storage/sfx/2574/2574-preview.mp3" preload="auto"></audio>
   <audio id="soundError" src="https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3" preload="auto"></audio>
 
   <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 max-w-sm w-full transition-all duration-300">
     
-    <!-- ส่วนหัวก่อนสแกน (จะถูกซ่อนเมื่อสแกนสำเร็จ) -->
     <div id="defaultHeader" class="transition-opacity duration-300">
       <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-500 border border-pink-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -40,15 +37,13 @@
       เปิดกล้องสแกน
     </button>
 
-    <!-- พื้นที่แสดงผลลัพธ์ (สำเร็จ / กำลังโหลด / ผิดพลาด) -->
     <div id="statusMessage" class="hidden w-full"></div>
-    
   </div>
 
   <script>
     // ==========================================
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec"; // ใช้ Web App URL เดิม
-    const LIFF_ID_SCAN = "2009934915-pRcpS1i7"; // ใส่ LIFF ID สำหรับหน้านี้
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec";
+    const LIFF_ID_SCAN = "ใส่_LIFF_ID_สำหรับหน้าสแกน"; 
     // ==========================================
 
     async function main() {
@@ -82,18 +77,19 @@
       document.getElementById('btnScan').disabled = true;
       try {
         const payload = { action: "checkin", bookingId: bookingId };
-        
         const response = await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        
         const result = await response.json();
 
+        // เช็คเงื่อนไขที่ส่งมาจาก Google Sheet
         if (result.success) {
-          renderUI('success', { name: result.name });
+          renderUI('success', { name: result.name, time: result.time });
+        } else if (result.alreadyCheckedIn) {
+          renderUI('already', { name: result.name, time: result.time });
         } else {
-          renderUI('error', { message: result.message || "รหัสไม่ถูกต้อง หรือเช็คอินไปแล้ว" });
+          renderUI('error', { message: result.message || "รหัสไม่ถูกต้อง" });
         }
       } catch (error) {
         renderUI('error', { message: "การเชื่อมต่อผิดพลาด กรุณาลองใหม่" });
@@ -101,7 +97,6 @@
       setTimeout(() => { document.getElementById('btnScan').disabled = false; }, 2000);
     }
 
-    // ฟังก์ชันจัดการหน้าตา UI สวยๆ
     function renderUI(type, data) {
       const msgDiv = document.getElementById('statusMessage');
       const defaultHeader = document.getElementById('defaultHeader');
@@ -120,12 +115,6 @@
       else if (type === 'success') {
         defaultHeader.classList.add('hidden');
         document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
-        
-        // ดึงเวลาปัจจุบันเพื่อแสดงผล
-        const now = new Date();
-        const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ' น.';
-
-        // เล่นเสียงสำเร็จ
         document.getElementById('soundSuccess').play().catch(() => {});
 
         msgDiv.innerHTML = `
@@ -135,7 +124,7 @@
             </div>
             <p class="text-[17px] font-bold text-slate-800 mb-2">คุณได้ลงทะเบียนเข้าเรียนแล้ว</p>
             <div class="inline-block bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full mb-5">
-              <p class="text-sm font-medium text-pink-600">เวลาเข้าเรียน: ${timeString}</p>
+              <p class="text-sm font-medium text-pink-600">เวลาเข้าเรียน: ${data.time}</p>
             </div>
             <div class="w-full pt-4 border-t border-slate-100 flex justify-between items-center px-2">
               <span class="text-xs text-slate-400">ชื่อลูกค้า</span>
@@ -144,11 +133,31 @@
           </div>
         `;
       } 
+      else if (type === 'already') {
+        defaultHeader.classList.add('hidden');
+        document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
+        document.getElementById('soundError').play().catch(() => {}); // ใช้เสียงติ๊ดแจ้งเตือนเบาๆ
+
+        // ธีมสีฟ้า/น้ำเงิน ดูเป็น Info แจ้งให้ทราบแบบหรูหรา ไม่ใช่การด่าว่า Error
+        msgDiv.innerHTML = `
+          <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
+            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl font-bold mb-4 shadow-sm border border-blue-100">
+              i
+            </div>
+            <p class="text-[17px] font-bold text-slate-800 mb-2">คุณได้ลงทะเบียนแล้ว</p>
+            <div class="inline-block bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-full mb-5">
+              <p class="text-sm font-medium text-blue-600">เคยลงทะเบียนเมื่อ: ${data.time}</p>
+            </div>
+            <div class="w-full pt-4 border-t border-slate-100 flex justify-between items-center px-2">
+              <span class="text-xs text-slate-400">ชื่อลูกค้า</span>
+              <span class="text-sm font-bold text-slate-700">${data.name}</span>
+            </div>
+          </div>
+        `;
+      }
       else if (type === 'error') {
         defaultHeader.classList.add('hidden');
         document.getElementById('btnScan').innerText = "ลองสแกนใหม่อีกครั้ง";
-        
-        // เล่นเสียงผิดพลาด
         document.getElementById('soundError').play().catch(() => {});
 
         msgDiv.innerHTML = `
