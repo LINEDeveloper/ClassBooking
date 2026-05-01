@@ -55,9 +55,9 @@
       </button>
     </nav>
 
+    <!-- ซ่อนแถบ Tab เพราะเหลือหน้าเดียวแล้ว -->
     <div class="bg-white px-6 border-b border-slate-200 flex space-x-6 shrink-0 shadow-sm">
-      <button id="tabBooking" onclick="switchTab('booking')" class="py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition">รายการจองลูกค้า</button>
-      <button id="tabClass" onclick="switchTab('class')" class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition">จัดการคลาสเรียน</button>
+      <div class="py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm">รายการจองลูกค้า</div>
     </div>
 
     <div class="flex-1 overflow-auto p-6 md:p-8 relative bg-slate-50/50">
@@ -113,38 +113,6 @@
         </div>
       </div>
 
-      <!-- VIEW 2: คลาสเรียน -->
-      <div id="viewClass" class="max-w-[1000px] mx-auto hidden transition-opacity duration-300">
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-white gap-4">
-            <div>
-              <h2 class="font-bold text-lg text-slate-800">ฐานข้อมูลคลาสเรียน (Class Master)</h2>
-            </div>
-            <div class="flex space-x-2">
-              <button onclick="fetchClasses()" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">🔄</button>
-              <button onclick="openClassModal()" class="bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-md transition">
-                + เพิ่มคลาสใหม่
-              </button>
-            </div>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50/50 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                  <th class="p-4 font-semibold w-24">รหัส</th>
-                  <th class="p-4 font-semibold">ชื่อคลาสเรียน</th>
-                  <th class="p-4 font-semibold">เวลาเรียน</th>
-                  <th class="p-4 font-semibold text-center w-24">สถานะ</th>
-                  <th class="p-4 font-semibold text-center w-24">จัดการ</th>
-                </tr>
-              </thead>
-              <tbody id="classTableBody" class="text-sm text-slate-700">
-                <tr><td colspan="5" class="text-center p-8 text-slate-400">กรุณาล็อกอินเพื่อโหลดข้อมูล...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -173,37 +141,12 @@
     </div>
   </div>
 
-  <!-- MODAL: จัดการคลาส -->
-  <div id="classModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 invisible transition-all duration-300">
-    <div id="classModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-all duration-300">
-      <div class="p-6 md:p-8">
-        <div class="flex justify-between items-center mb-6">
-          <h3 id="classModalTitle" class="text-xl font-bold text-slate-800">เพิ่มคลาสเรียน</h3>
-          <button onclick="closeClassModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-        </div>
-        <div class="space-y-4">
-          <div><label class="block text-xs font-bold text-slate-500 mb-1">รหัสคลาส</label><input type="text" id="mClassId" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น C003"></div>
-          <div><label class="block text-xs font-bold text-slate-500 mb-1">ชื่อคลาสเรียน</label><input type="text" id="mClassName" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น Zumba Dance"></div>
-          <div><label class="block text-xs font-bold text-slate-500 mb-1">เวลาเรียน</label><input type="text" id="mClassTime" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น 17:00 - 18:00 น."></div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 mb-1">สถานะ</label>
-            <select id="mClassStatus" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm">
-              <option value="เปิดรับ">เปิดรับสมัคร</option>
-              <option value="ปิดชั่วคราว">ปิดชั่วคราว</option>
-            </select>
-          </div>
-        </div>
-        <div class="mt-8"><button onclick="saveClass()" id="btnSaveClass" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl hover:bg-slate-700 transition">บันทึกข้อมูล</button></div>
-      </div>
-    </div>
-  </div>
-
   <!-- JAVASCRIPT SYSTEM -->
   <script>
     // ⚙️ URL API (ใช้ Web App URL ของคุณ)
     const API_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec";
     
-    // --- ระบบ Login & Tabs ---
+    // --- ระบบ Login ---
     function login() {
       document.getElementById('loginView').classList.add('opacity-0');
       setTimeout(() => {
@@ -211,26 +154,11 @@
         document.getElementById('dashboardView').classList.remove('hidden');
         setTimeout(() => document.getElementById('dashboardView').classList.remove('opacity-0'), 50);
         
-        fetchBookings();
-        fetchClasses();
+        fetchBookings(); // โหลดข้อมูลรายการจอง
       }, 300);
     }
 
     function logout() { location.reload(); }
-
-    function switchTab(tabName) {
-      if (tabName === 'booking') {
-        document.getElementById('tabBooking').className = "py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition";
-        document.getElementById('tabClass').className = "py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition";
-        document.getElementById('viewClass').classList.add('hidden');
-        document.getElementById('viewBooking').classList.remove('hidden');
-      } else {
-        document.getElementById('tabClass').className = "py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition";
-        document.getElementById('tabBooking').className = "py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition";
-        document.getElementById('viewBooking').classList.add('hidden');
-        document.getElementById('viewClass').classList.remove('hidden');
-      }
-    }
 
     // --- 📡 ดึงข้อมูลรายการจอง ---
     async function fetchBookings() {
@@ -276,6 +204,9 @@
         else if (item.status === "ชำระเงินแล้ว" || item.status === "จองสำเร็จ") {
           statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">ชำระเงินแล้ว</span>`;
         }
+        else if (item.status === "ยกเลิก") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-600">ยกเลิก</span>`;
+        }
 
         // ตกแต่งป้ายสถานะเข้าเรียน
         let checkInUI = `<span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>`;
@@ -320,43 +251,6 @@
       document.getElementById('statCheckIn').innerText = checkedIn;
     }
 
-    // --- 📡 ดึงข้อมูลคลาสเรียน ---
-    async function fetchClasses() {
-      const tbody = document.getElementById('classTableBody');
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400 animate-pulse">กำลังโหลดข้อมูล...</td></tr>';
-      
-      try {
-        const response = await fetch(API_URL + "?action=get_classes");
-        const result = await response.json();
-        
-        if (result.status === "success") {
-          tbody.innerHTML = "";
-          result.data.forEach(c => {
-            const statusStyle = c.status === "เปิดรับ" || c.status === "เปิดรับสมัคร" 
-              ? "bg-green-100 text-green-600" 
-              : "bg-slate-200 text-slate-500";
-              
-            const row = `
-              <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
-                <td class="p-4 font-mono text-slate-500 font-bold">${c.classId}</td>
-                <td class="p-4 text-pink-600 font-bold">${c.className}</td>
-                <td class="p-4 text-slate-600">${c.classTime}</td>
-                <td class="p-4 text-center"><span class="px-2 py-1 rounded ${statusStyle} text-xs font-bold">${c.status}</span></td>
-                <td class="p-4 text-center">
-                  <button onclick="openClassModal('${c.classId}', '${c.className}', '${c.classTime}', '${c.status}')" class="text-slate-400 hover:text-pink-500 transition p-1 bg-white border border-slate-200 rounded shadow-sm">
-                    ✏️ แก้ไข
-                  </button>
-                </td>
-              </tr>
-            `;
-            tbody.innerHTML += row;
-          });
-        }
-      } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 p-8">ดึงข้อมูลล้มเหลว</td></tr>';
-      }
-    }
-
     // --- ระบบจัดการสลิป (อัปเดต Google Sheet) ---
     function openSlipModal(bkId, cusName, imgUrl) {
       document.getElementById('modalBkId').innerText = bkId;
@@ -397,47 +291,6 @@
         });
         fetchBookings();
       } catch(e) {}
-    }
-
-    // --- ระบบจัดการคลาส (เพิ่ม/แก้ไข) ---
-    function openClassModal(id='', name='', time='', status='เปิดรับ') {
-      document.getElementById('classModalTitle').innerText = id ? "แก้ไขคลาสเรียน" : "เพิ่มคลาสเรียน";
-      document.getElementById('mClassId').value = id;
-      document.getElementById('mClassName').value = name;
-      document.getElementById('mClassTime').value = time;
-      document.getElementById('mClassStatus').value = status;
-      
-      const m = document.getElementById('classModal');
-      const c = document.getElementById('classModalContent');
-      m.classList.add('modal-enter'); c.classList.add('modal-content-enter');
-    }
-
-    function closeClassModal() {
-      document.getElementById('classModal').classList.remove('modal-enter');
-      document.getElementById('classModalContent').classList.remove('modal-content-enter');
-    }
-
-    async function saveClass() {
-      const classData = {
-        classId: document.getElementById('mClassId').value,
-        className: document.getElementById('mClassName').value,
-        classTime: document.getElementById('mClassTime').value,
-        status: document.getElementById('mClassStatus').value
-      };
-      
-      if(!classData.classId || !classData.className) return alert("กรุณากรอกรหัสและชื่อคลาสให้ครบ");
-
-      document.getElementById('btnSaveClass').innerText = "กำลังบันทึก...";
-      
-      try {
-        await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: "save_class", classData: classData })
-        });
-        closeClassModal();
-        fetchClasses(); // โหลดตารางใหม่
-        document.getElementById('btnSaveClass').innerText = "บันทึกข้อมูล";
-      } catch(e) { alert("เกิดข้อผิดพลาด"); }
     }
   </script>
 </body>
