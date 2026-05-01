@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
-    /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -64,49 +63,55 @@
 
     <!-- Content Area -->
     <div class="flex-1 overflow-auto p-6 md:p-8">
-      <div class="max-w-7xl mx-auto">
+      <div class="max-w-[1400px] mx-auto">
         
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสอบสลิป</p><p class="text-2xl font-bold text-slate-800">3 <span class="text-sm font-normal text-slate-400">รายการ</span></p></div>
+            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสลิป</p><p class="text-2xl font-bold text-slate-800">3</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">รอชำระเงิน</p><p class="text-2xl font-bold text-slate-800">12 <span class="text-sm font-normal text-slate-400">รายการ</span></p></div>
+            <div><p class="text-sm text-slate-500 font-medium">รอชำระเงิน</p><p class="text-2xl font-bold text-slate-800">12</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">จองสำเร็จ (เดือนนี้)</p><p class="text-2xl font-bold text-slate-800">45 <span class="text-sm font-normal text-slate-400">รายการ</span></p></div>
+            <div><p class="text-sm text-slate-500 font-medium">จองสำเร็จ (ดือนนี้)</p><p class="text-2xl font-bold text-slate-800">45</p></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
+            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">เช็คอินวันนี้</p><p class="text-2xl font-bold text-slate-800">8</p></div>
           </div>
         </div>
 
         <!-- Table Section -->
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50/50 gap-4">
             <h2 class="font-bold text-lg text-slate-800">รายการจองทั้งหมด</h2>
-            <div class="flex space-x-2">
-              <input type="text" placeholder="ค้นหาชื่อ, รหัสจอง..." class="px-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400">
-              <button class="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition">รีเฟรช</button>
+            <div class="flex space-x-2 w-full md:w-auto">
+              <input type="text" placeholder="ค้นหาชื่อ, รหัสจอง..." class="w-full md:w-64 px-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400">
+              <button class="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition shrink-0">รีเฟรช</button>
             </div>
           </div>
           
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr class="bg-white text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
                   <th class="p-4 font-semibold">รหัสจอง</th>
                   <th class="p-4 font-semibold">ลูกค้า</th>
                   <th class="p-4 font-semibold">คลาสเรียน</th>
-                  <th class="p-4 font-semibold">วัน/เวลา</th>
-                  <th class="p-4 font-semibold">สถานะ</th>
+                  <th class="p-4 font-semibold">วัน/เวลาเรียน</th>
+                  <th class="p-4 font-semibold">สถานะการชำระ</th>
+                  <!-- [เพิ่มใหม่] คอลัมน์สถานะเข้าเรียน -->
+                  <th class="p-4 font-semibold text-center">เข้าเรียน</th>
                   <th class="p-4 font-semibold text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody class="text-sm text-slate-700">
                 
-                <!-- ตัวอย่างแถว: รอตรวจสอบสลิป -->
+                <!-- ตัวอย่างแถว 1: รอตรวจสอบสลิป / ยังไม่เข้าเรียน -->
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
                   <td class="p-4 font-mono text-slate-500">BK17140001</td>
                   <td class="p-4"><p class="font-bold text-slate-800">คุณใจดี รักเรียน</p><p class="text-xs text-slate-400">0812345678</p></td>
@@ -114,23 +119,14 @@
                   <td class="p-4"><p>05/05/2026</p><p class="text-xs text-slate-400">10:00 - 11:30</p></td>
                   <td class="p-4"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600">รอตรวจสอบ</span></td>
                   <td class="p-4 text-center">
-                    <button onclick="openSlipModal('BK17140001', 'คุณใจดี รักเรียน', 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=300&auto=format&fit=crop')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition">ตรวจสลิป</button>
+                    <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>
                   </td>
-                </tr>
-
-                <!-- ตัวอย่างแถว: รอชำระเงิน -->
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
-                  <td class="p-4 font-mono text-slate-500">BK17140002</td>
-                  <td class="p-4"><p class="font-bold text-slate-800">คุณสมชาย ขยัน</p><p class="text-xs text-slate-400">0898765432</p></td>
-                  <td class="p-4 text-pink-600 font-medium">Pilates Advance</td>
-                  <td class="p-4"><p>06/05/2026</p><p class="text-xs text-slate-400">13:00 - 14:30</p></td>
-                  <td class="p-4"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-yellow-100 text-yellow-600">รอชำระเงิน</span></td>
                   <td class="p-4 text-center">
-                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline">แก้ไข/ยกเลิก</button>
+                    <button onclick="openSlipModal('BK17140001', 'คุณใจดี รักเรียน', 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=300&auto=format&fit=crop')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">ตรวจสลิป</button>
                   </td>
                 </tr>
 
-                <!-- ตัวอย่างแถว: จองสำเร็จ -->
+                <!-- ตัวอย่างแถว 2: จองสำเร็จ / เช็คอินแล้ว มีเวลาโชว์ -->
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
                   <td class="p-4 font-mono text-slate-500">BK17140003</td>
                   <td class="p-4"><p class="font-bold text-slate-800">คุณอนนท์ ศรีวาจา</p><p class="text-xs text-slate-400">0801112222</p></td>
@@ -138,7 +134,46 @@
                   <td class="p-4"><p>05/05/2026</p><p class="text-xs text-slate-400">10:00 - 11:30</p></td>
                   <td class="p-4"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">จองสำเร็จ</span></td>
                   <td class="p-4 text-center">
-                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline">ดูรายละเอียด</button>
+                    <div class="flex flex-col items-center justify-center">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        เช็คอินแล้ว
+                      </span>
+                      <p class="text-[10px] text-slate-500 font-mono mt-1">เวลา 09:45 น.</p>
+                    </div>
+                  </td>
+                  <td class="p-4 text-center">
+                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline font-medium">รายละเอียด</button>
+                  </td>
+                </tr>
+
+                <!-- ตัวอย่างแถว 3: จองสำเร็จ / รอเข้าเรียน (ยังไม่ถึงเวลา หรือยังไม่มา) -->
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
+                  <td class="p-4 font-mono text-slate-500">BK17140004</td>
+                  <td class="p-4"><p class="font-bold text-slate-800">คุณสายเสมอ ดีงาม</p><p class="text-xs text-slate-400">0833334444</p></td>
+                  <td class="p-4 text-pink-600 font-medium">Pilates Advance</td>
+                  <td class="p-4"><p>06/05/2026</p><p class="text-xs text-slate-400">13:00 - 14:30</p></td>
+                  <td class="p-4"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">จองสำเร็จ</span></td>
+                  <td class="p-4 text-center">
+                    <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">รอเข้าเรียน</span>
+                  </td>
+                  <td class="p-4 text-center">
+                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline font-medium">รายละเอียด</button>
+                  </td>
+                </tr>
+
+                <!-- ตัวอย่างแถว 4: รอชำระเงิน -->
+                <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
+                  <td class="p-4 font-mono text-slate-500">BK17140002</td>
+                  <td class="p-4"><p class="font-bold text-slate-800">คุณสมชาย ขยัน</p><p class="text-xs text-slate-400">0898765432</p></td>
+                  <td class="p-4 text-pink-600 font-medium">Pilates Advance</td>
+                  <td class="p-4"><p>06/05/2026</p><p class="text-xs text-slate-400">13:00 - 14:30</p></td>
+                  <td class="p-4"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-yellow-100 text-yellow-600">รอชำระเงิน</span></td>
+                  <td class="p-4 text-center">
+                    <span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>
+                  </td>
+                  <td class="p-4 text-center">
+                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline font-medium">ยกเลิก</button>
                   </td>
                 </tr>
 
@@ -146,14 +181,14 @@
             </table>
           </div>
           
-          <!-- Pagination (Mock) -->
-          <div class="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-            <span>แสดง 1-3 จากทั้งหมด 60 รายการ</span>
+          <!-- Pagination -->
+          <div class="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500 bg-slate-50/50">
+            <span>แสดง 1-4 จากทั้งหมด 60 รายการ</span>
             <div class="flex space-x-1">
-              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50" disabled>&lt;</button>
+              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-white disabled:opacity-50" disabled>&lt;</button>
               <button class="px-3 py-1 border border-pink-500 bg-pink-50 text-pink-600 rounded font-bold">1</button>
-              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50">2</button>
-              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50">&gt;</button>
+              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-white">2</button>
+              <button class="px-3 py-1 border border-slate-200 rounded hover:bg-white">&gt;</button>
             </div>
           </div>
         </div>
@@ -194,11 +229,11 @@
         </div>
 
         <div class="mt-auto space-y-3">
-          <button onclick="approveSlip()" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-green-500/20 hover:bg-green-600 transition flex justify-center items-center">
+          <button onclick="approveSlip()" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-green-500/20 hover:bg-green-600 transition flex justify-center items-center active:scale-95">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             ยืนยันว่าได้รับเงินแล้ว (จองสำเร็จ)
           </button>
-          <button onclick="rejectSlip()" class="w-full bg-white border-2 border-red-100 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 transition">
+          <button onclick="rejectSlip()" class="w-full bg-white border-2 border-red-100 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 transition active:scale-95">
             สลิปไม่ถูกต้อง / ปฏิเสธ
           </button>
         </div>
@@ -207,9 +242,7 @@
   </div>
 
   <script>
-    // สคริปต์สำหรับจำลองการทำงานของ UI
     function login() {
-      // เมื่อกด Login ให้ซ่อนหน้า Login และโชว์ Dashboard
       document.getElementById('loginView').classList.add('hidden');
       document.getElementById('dashboardView').classList.remove('hidden');
     }
@@ -228,7 +261,6 @@
       const modalContent = document.getElementById('slipModalContent');
       
       modal.classList.remove('hidden');
-      // หน่วงเวลานิดนึงเพื่อให้ Transition ทำงาน
       setTimeout(() => {
         modal.classList.remove('opacity-0');
         modalContent.classList.remove('scale-95');
@@ -248,12 +280,12 @@
     }
 
     function approveSlip() {
-      alert("จำลอง: อัปเดตสถานะเป็น 'จองสำเร็จ' เรียบร้อย (ข้อมูลจะถูกส่งไปที่ Google Sheet)");
+      alert("จำลอง: อัปเดตสถานะเป็น 'จองสำเร็จ' เรียบร้อย");
       closeSlipModal();
     }
     
     function rejectSlip() {
-      if(confirm("แน่ใจหรือไม่ว่าต้องการปฏิเสธสลิปนี้? ลูกค้าจะกลับไปอยู่สถานะ 'รอชำระเงิน'")) {
+      if(confirm("แน่ใจหรือไม่ว่าต้องการปฏิเสธสลิปนี้?")) {
         closeSlipModal();
       }
     }
