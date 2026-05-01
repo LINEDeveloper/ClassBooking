@@ -18,11 +18,11 @@
       opacity: 1;
     }
     
-    /* Custom Loader */
+    /* Custom Loader สีชมพูเข้าธีม Yoka Booking */
     .loader {
       width: 40px;
       aspect-ratio: 1.154;
-      --_g: no-repeat radial-gradient(farthest-side, #2563eb 90%, #0000);
+      --_g: no-repeat radial-gradient(farthest-side, #ec4899 90%, #0000);
       background: 
         var(--_g) 50%  0,
         var(--_g) 0    100%,
@@ -245,7 +245,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (จัดกึ่งกลางและปรับไอคอนแจ้งเตือนแดง) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-white border-t border-slate-200 flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_15px_rgba(0,0,0,0.03)] z-40">
     <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -278,7 +278,7 @@
     // ------------------------------------
     // DICTIONARY สำหรับระบบ 2 ภาษา
     // ------------------------------------
-    let currentLang = localStorage.getItem('yoka_lang') || 'th'; // ดึงภาษาที่เคยเลือกไว้ ถ้าไม่มีให้เป็นไทย
+    let currentLang = localStorage.getItem('yoka_lang') || 'th'; 
 
     const translations = {
       th: {
@@ -318,6 +318,7 @@
         navMyBooking: "การจองของฉัน",
         saveSuccess: "✓ บันทึกข้อมูลสำเร็จ",
         dayPrefix: "วัน",
+        datePrefix: "วันที่ ",
         statusPending: "รอชำระเงิน",
         statusPaid: "ชำระเงินแล้ว",
         statusSuccess: "จองสำเร็จ",
@@ -327,7 +328,8 @@
         btnFull: "คลาสเต็ม",
         btnBook: "จองคลาส",
         alertIncomplete: "กรุณากรอกข้อมูลให้ครบถ้วนครับ",
-        alertDateMismatch: "วันที่คุณเลือกไม่ตรงกับตารางเรียน กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ",
+        alertDateMismatchPrefix: "วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียน",
+        alertDateMismatchSuffix: ") กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ",
         alertDuplicate: "คุณมีคลาสเรียนเวลาดังกล่าวแล้ว",
         alertCancelConfirm: "คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?",
         alertError: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
@@ -369,6 +371,7 @@
         navMyBooking: "My Bookings",
         saveSuccess: "✓ Saved successfully",
         dayPrefix: "",
+        datePrefix: "Date: ",
         statusPending: "Pending",
         statusPaid: "Paid",
         statusSuccess: "Confirmed",
@@ -378,16 +381,30 @@
         btnFull: "Class is Full",
         btnBook: "Book Class",
         alertIncomplete: "Please fill in all required fields.",
-        alertDateMismatch: "The selected date does not match the class schedule. Please select the correct date.",
+        alertDateMismatchPrefix: "The selected date does not match the class schedule (This class is on ",
+        alertDateMismatchSuffix: "). Please select the correct date.",
         alertDuplicate: "You already have a booking for this time slot.",
         alertCancelConfirm: "Are you sure you want to cancel this booking?",
         alertError: "An error occurred. Please try again."
       }
     };
 
-    // ฟังก์ชันแปลคำศัพท์ใน HTML
+    function translateDayName(rawDate) {
+      if(!rawDate) return "";
+      let cleanDay = rawDate.replace(/^วัน/, '').trim();
+      let cleanDayUpper = cleanDay.toUpperCase();
+
+      const mapToTh = { "SUNDAY": "อาทิตย์", "MONDAY": "จันทร์", "TUESDAY": "อังคาร", "WEDNESDAY": "พุธ", "THURSDAY": "พฤหัสบดี", "FRIDAY": "ศุกร์", "SATURDAY": "เสาร์" };
+      const mapToEn = { "อาทิตย์": "SUNDAY", "จันทร์": "MONDAY", "อังคาร": "TUESDAY", "พุธ": "WEDNESDAY", "พฤหัสบดี": "THURSDAY", "ศุกร์": "FRIDAY", "เสาร์": "SATURDAY" };
+
+      if (currentLang === 'th') {
+        return mapToTh[cleanDayUpper] || cleanDay;
+      } else {
+        return mapToEn[cleanDay] || cleanDayUpper;
+      }
+    }
+
     function applyLanguage() {
-      // เซ็ตสถานะสวิตช์ปุ่มตอนโหลดหน้า
       const toggleBtn = document.getElementById('langToggle');
       if(currentLang === 'en') {
         toggleBtn.checked = true;
@@ -399,7 +416,6 @@
         document.getElementById('langEnText').classList.replace('text-slate-800', 'text-slate-400');
       }
 
-      // แปลข้อความที่มี attribute data-i18n
       const elements = document.querySelectorAll('[data-i18n]');
       elements.forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -408,7 +424,6 @@
         }
       });
 
-      // แปล placeholder
       const inputs = document.querySelectorAll('[data-i18n-placeholder]');
       inputs.forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
@@ -417,10 +432,8 @@
         }
       });
 
-      // อัปเดตข้อความทักทาย (ถ้ามีชื่อแล้ว)
       updateGreetingName();
       
-      // ถ้ามีการโหลดข้อมูลอยู่แล้ว ให้ re-render หน้าจอใหม่เพื่อเปลี่ยนภาษาที่อยู่ใน JavaScript
       if (allClassData.length > 0) {
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
         if(!document.getElementById('classListView').classList.contains('hidden')) showClassesForDay(document.getElementById('selectedDayTitle').innerText.replace(translations[currentLang].dayPrefix,'').trim());
@@ -432,20 +445,17 @@
       }
     }
 
-    // เมื่อลูกค้ากดสวิตช์
     function toggleLanguage() {
       const toggleBtn = document.getElementById('langToggle');
       currentLang = toggleBtn.checked ? 'en' : 'th';
-      localStorage.setItem('yoka_lang', currentLang); // จำค่าลงเครื่อง
+      localStorage.setItem('yoka_lang', currentLang); 
       applyLanguage();
     }
 
-    // ดึงข้อความสำหรับ Alert
     function t(key) {
       return translations[currentLang][key] || key;
     }
 
-    // เปลี่ยนคำสถานะ
     function translateStatus(statusTh) {
       if(currentLang === 'th') return statusTh;
       if(statusTh === 'รอชำระเงิน') return t('statusPending');
@@ -457,7 +467,7 @@
     function updateGreetingName() {
       const nameToShow = savedName || lineDisplayName;
       if(nameToShow) {
-        document.getElementById('profileName').innerText = `${t('helloPrefix')} ${nameToShow}`;
+        document.getElementById('profileName').innerText = `${t('helloPrefix')}${nameToShow}`;
       }
     }
 
@@ -465,7 +475,7 @@
     // ฟังก์ชันหลัก (Core Functions)
     // ------------------------------------
     async function main() {
-      applyLanguage(); // แปลครั้งแรกตอนโหลดโครงสร้าง
+      applyLanguage(); 
 
       await liff.init({ liffId: LIFF_ID });
       if (liff.isLoggedIn()) {
@@ -578,7 +588,7 @@
         let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") 
                         ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
         
-        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : (booking.date || booking.dayOfWeek);
+        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : `${t('dayPrefix')}${translateDayName(booking.date || booking.dayOfWeek)}`;
         let statusText = translateStatus(booking.status);
 
         html += `
@@ -586,7 +596,7 @@
             <div class="absolute left-0 top-0 w-1 h-full bg-pink-400"></div>
             <div>
               <h3 class="font-bold text-slate-800 text-sm">${booking.className}</h3>
-              <p class="text-xs text-slate-500 mt-1">${showDate} | ${booking.time}</p>
+              <p class="text-xs text-slate-500 mt-1">${t('datePrefix')}${showDate} | ${booking.time}</p>
             </div>
             <div class="flex items-center text-right">
               <span class="px-2 py-1 rounded-md text-[10px] font-bold ${statusColor} mr-3">${statusText}</span>
@@ -623,7 +633,7 @@
             <div class="w-11 h-11 bg-pink-50 rounded-full flex items-center justify-center mb-2 text-pink-600 shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${day}</span>
+            <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${t('dayPrefix')}${translateDayName(day)}</span>
             <span class="text-xs text-slate-500 mt-1">${classCount} ${t('classesCount')}</span>
           </div>
         `;
@@ -635,7 +645,7 @@
       document.getElementById('dayListView').classList.add('hidden');
       document.getElementById('classListView').classList.remove('hidden');
       
-      document.getElementById('selectedDayTitle').innerText = `${t('dayPrefix')}${selectedDay}`;
+      document.getElementById('selectedDayTitle').innerText = `${t('dayPrefix')}${translateDayName(selectedDay)}`;
       const filteredClasses = allClassData.filter(c => c.date === selectedDay);
       
       let html = '';
@@ -691,7 +701,7 @@
       document.getElementById('bName').innerText = booking.name;
       document.getElementById('bClassName').innerText = booking.className;
       
-      let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : (booking.date || booking.dayOfWeek);
+      let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : `${t('dayPrefix')}${translateDayName(booking.date || booking.dayOfWeek)}`;
       document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
       
@@ -706,7 +716,7 @@
       relatedClasses.forEach(c => {
         const option = document.createElement('option');
         option.value = c.classId;
-        option.text = `${t('dayPrefix')}${c.date} | ${c.time}`;
+        option.text = `${t('dayPrefix')}${translateDayName(c.date)} | ${c.time}`;
         if (c.classId === booking.classId) option.selected = true; 
         scheduleSelect.appendChild(option);
       });
@@ -728,7 +738,7 @@
 
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
-      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${t('dayPrefix')}${date} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
+      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${t('dayPrefix')}${translateDayName(date)} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
       
       document.getElementById('name').value = savedName;
       document.getElementById('phone').value = savedPhone;
@@ -772,7 +782,8 @@
           const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
           const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
           
-          const d = new Date(bookingDate);
+          const dateParts = bookingDate.split('-');
+          const d = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
           const dayIndex = d.getDay();
           const dayNameThai = daysThai[dayIndex];
           const dayNameEng = daysEng[dayIndex];
@@ -781,7 +792,7 @@
           
           if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
               !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-            alert(t('alertDateMismatch'));
+            alert(`${t('alertDateMismatchPrefix')}${t('dayPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
             checkbox.checked = false;
             return;
           }
@@ -830,7 +841,8 @@
         const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
         const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         
-        const d = new Date(bookingDate);
+        const dateParts = bookingDate.split('-');
+        const d = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
         const dayIndex = d.getDay();
         const dayNameThai = daysThai[dayIndex];
         const dayNameEng = daysEng[dayIndex];
@@ -839,7 +851,7 @@
         
         if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
             !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-          alert(t('alertDateMismatch'));
+          alert(`${t('alertDateMismatchPrefix')}${t('dayPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
           return;
         }
 
