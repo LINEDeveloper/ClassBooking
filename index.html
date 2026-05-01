@@ -177,6 +177,7 @@
         <span data-i18n="btnBackToList">กลับหน้ารวม</span>
       </button>
 
+      <!-- กล่องข้อมูลการจองของคุณ -->
       <div id="activeBookingState" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
         <div class="p-6">
           
@@ -248,6 +249,33 @@
           </div>
         </div>
       </div>
+
+      <!-- [ใหม่] กล่องช่องทางการชำระเงิน (จะซ่อนเมื่อชำระแล้ว) -->
+      <div id="paymentSection" class="mt-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative hidden">
+        <div class="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+          <h3 class="font-bold text-slate-700 text-sm" data-i18n="paymentInfoTitle">ช่องทางการชำระเงิน</h3>
+        </div>
+        <div class="p-6 text-center">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#4e2a84] mb-3 shadow-sm">
+            <span class="text-white font-bold text-xs">SCB</span>
+          </div>
+          <p class="text-sm font-bold text-slate-800" data-i18n="bankName">ธนาคารไทยพาณิชย์ (SCB)</p>
+          <p class="text-lg font-mono font-bold text-pink-600 mt-1 select-all">00000000000</p>
+          <p class="text-xs text-slate-500 mt-1 mb-5" data-i18n="accName">ชื่อบัญชี: คุณอนนท์ ศรีวาจา</p>
+
+          <!-- ใส่ Link รูปภาพ QR Code ของคุณที่นี่ตรง src="..." -->
+          <div class="p-2 bg-white border-2 border-dashed border-pink-200 rounded-2xl inline-block shadow-sm">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=00000000000" alt="QR Code" class="w-40 h-40 object-contain rounded-xl">
+          </div>
+          
+          <p class="text-[10px] text-slate-400 mt-4 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+            <span data-i18n="saveQrHint">สามารถกดค้างที่รูปเพื่อบันทึก QR Code</span>
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -332,6 +360,10 @@
         badgeSeat: "ที่",
         btnFull: "คลาสเต็ม",
         btnBook: "จองคลาส",
+        paymentInfoTitle: "ช่องทางการชำระเงิน",
+        bankName: "ธนาคารไทยพาณิชย์ (SCB)",
+        accName: "ชื่อบัญชี: คุณอนนท์ ศรีวาจา",
+        saveQrHint: "สามารถกดค้างที่รูปเพื่อบันทึก QR Code",
         alertIncomplete: "กรุณากรอกข้อมูลให้ครบถ้วนครับ",
         alertDateMismatchPrefix: "วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน",
         alertDateMismatchSuffix: ") กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ",
@@ -384,6 +416,10 @@
         badgeSeat: "seats",
         btnFull: "Class is Full",
         btnBook: "Book Class",
+        paymentInfoTitle: "Payment Information",
+        bankName: "Siam Commercial Bank (SCB)",
+        accName: "Account Name: Anon Sriwaja",
+        saveQrHint: "Long press the image to save QR Code",
         alertIncomplete: "Please fill in all required fields.",
         alertDateMismatchPrefix: "The selected date does not match the class schedule (This class is on ",
         alertDateMismatchSuffix: "). Please select the correct date.",
@@ -597,6 +633,7 @@
       let html = '';
       
       myBookingsData.forEach(booking => {
+        // [แก้ไข] สีสถานะในหน้ารวมคลาส
         let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") 
                         ? "bg-green-500 text-white" : "bg-yellow-100 text-yellow-700";
         
@@ -611,7 +648,7 @@
               <p class="text-xs text-slate-500 mt-1">${t('datePrefix')}${showDate} | ${booking.time}</p>
             </div>
             <div class="flex items-center text-right">
-              <span class="px-3 py-1 rounded-full text-xs font-bold ${statusColor} mr-3">${statusText}</span>
+              <span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusColor} mr-3">${statusText}</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-pink-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </div>
           </div>
@@ -736,16 +773,21 @@
       });
 
       const statusBadge = document.getElementById('bookingStatus');
+      const paymentSection = document.getElementById('paymentSection');
+      
       statusBadge.innerText = translateStatus(booking.status);
 
+      // [แก้ไข] สีสถานะและการซ่อนกล่องในหน้ารายละเอียดการจอง
       if(booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-green-500 text-white inline-block";
         document.getElementById('btnEdit').classList.add('hidden');
         document.getElementById('btnCancel').classList.add('hidden');
+        paymentSection.classList.add('hidden'); // ซ่อนกล่องจ่ายเงินเมื่อจ่ายแล้ว
       } else {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block";
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
+        paymentSection.classList.remove('hidden'); // โชว์กล่องจ่ายเงินเมื่อรอจ่าย
       }
       document.getElementById('editForm').classList.add('hidden'); 
     }
