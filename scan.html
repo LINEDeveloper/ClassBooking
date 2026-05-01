@@ -83,7 +83,6 @@
         });
         const result = await response.json();
 
-        // เช็คเงื่อนไขที่ส่งมาจาก Google Sheet
         if (result.success) {
           renderUI('success', { name: result.name, time: result.time });
         } else if (result.alreadyCheckedIn) {
@@ -116,13 +115,16 @@
         defaultHeader.classList.add('hidden');
         document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
         document.getElementById('soundSuccess').play().catch(() => {});
+        
+        // เช็คว่าชื่อมีคำว่า "คุณ" นำหน้าอยู่แล้วหรือไม่ จะได้ไม่ซ้ำซ้อน
+        const displayName = data.name.startsWith("คุณ") ? data.name : "คุณ " + data.name;
 
         msgDiv.innerHTML = `
           <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
             <div class="w-16 h-16 bg-[#f0fdf4] text-[#22c55e] rounded-full flex items-center justify-center text-4xl font-light mb-4 shadow-sm border border-[#bbf7d0]">
               ✓
             </div>
-            <p class="text-[17px] font-bold text-slate-800 mb-2">คุณได้ลงทะเบียนเข้าเรียนแล้ว</p>
+            <p class="text-[17px] font-bold text-slate-800 mb-2">${displayName}</p>
             <div class="inline-block bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full mb-5">
               <p class="text-sm font-medium text-pink-600">เวลาเข้าเรียน: ${data.time}</p>
             </div>
@@ -136,9 +138,8 @@
       else if (type === 'already') {
         defaultHeader.classList.add('hidden');
         document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
-        document.getElementById('soundError').play().catch(() => {}); // ใช้เสียงติ๊ดแจ้งเตือนเบาๆ
+        document.getElementById('soundError').play().catch(() => {});
 
-        // ธีมสีฟ้า/น้ำเงิน ดูเป็น Info แจ้งให้ทราบแบบหรูหรา ไม่ใช่การด่าว่า Error
         msgDiv.innerHTML = `
           <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
             <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl font-bold mb-4 shadow-sm border border-blue-100">
