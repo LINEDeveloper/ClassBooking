@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบเช็คอิน YOKA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ต้องมี LIFF SDK -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body class="bg-slate-50 flex flex-col items-center justify-center min-h-screen p-4 text-center">
+
+  <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-sm w-full">
+    <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-600">
+      <!-- ไอคอน QR Code -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+    </div>
+    <h1 class="text-xl font-bold text-slate-800 mb-2">สแกนเช็คอิน</h1>
+    <p class="text-sm text-slate-500 mb-6">กดปุ่มด้านล่างเพื่อเปิดกล้อง และสแกน QR Code จากมือถือลูกค้า</p>
+    
+    <button id="btnScan" onclick="startScan()" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-3 rounded-xl shadow-md hover:opacity-90 transition disabled:opacity-50 hidden">
+      เปิดกล้องสแกน
+    </button>
+
+    <!-- แจ้งเตือนสถานะ -->
+    <div id="statusMessage" class="mt-4 text-sm font-medium hidden p-3 rounded-lg"></div>
+  </div>
+
+  <script>
+    // ==========================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec"; // URL ของ Web App คุณ
+    const LIFF_ID_SCAN = "ใส่_LIFF_ID_สำหรับหน้าสแกน"; // แนะนำให้สร้าง LIFF ID แยกสำหรับหน้านี้
+    // ==========================================
+
+    async function main() {
+      await liff.init({ liffId: LIFF_ID_SCAN });
+      if (liff.isLoggedIn()) {
+        document.getElementById('btnScan').classList.remove('hidden');
+      } else {
+        liff.login();
+      }
+    }
+    main();
+
+    async function startScan() {
+      if (liff.scanCodeV2) {
+        try {
+          const result = await liff.scanCodeV2();
+          if (result && result.value) {
+            const bookingId = result.value;
+            showMessage("กำลังอัปเดตข้อมูล รหัส: " + bookingId + "...", "yellow");
+            await sendCheckIn(bookingId);
+          }
+        } catch (err) {
+          showMessage("การสแกนถูกยกเลิก หรือเกิดข้อผิดพลาด", "red");
+        }
+      } else {
+        showMessage("แอป LINE ของคุณไม่รองรับการสแกน", "red");
+      }
+    }
+
+    async function sendCheckIn(bookingId) {
+      document.getElementById('btnScan').disabled = true;
+      try {
+        const payload = {
+          action: "checkin",
+          bookingId: bookingId
+        };
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          showMessage("✅ เช็คอินสำเร็จ! (" + result.name + ")", "green");
+        } else {
+          showMessage("❌ รหัสไม่ถูกต้อง หรือเช็คอินไปแล้ว", "red");
+        }
+      } catch (error) {
+        showMessage("❌ การเชื่อมต่อผิดพลาด", "red");
+      }
+      setTimeout(() => { document.getElementById('btnScan').disabled = false; }, 2000);
+    }
+
+    function showMessage(text, color) {
+      const msgDiv = document.getElementById('statusMessage');
+      msgDiv.innerText = text;
+      msgDiv.className = "mt-4 text-sm font-medium p-3 rounded-lg"; // รีเซ็ตคลาส
+      if (color === 'green') msgDiv.classList.add("bg-green-100", "text-green-700");
+      if (color === 'red') msgDiv.classList.add("bg-red-100", "text-red-700");
+      if (color === 'yellow') msgDiv.classList.add("bg-yellow-100", "text-yellow-700");
+      msgDiv.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
