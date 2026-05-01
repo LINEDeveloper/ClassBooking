@@ -1006,7 +1006,7 @@
       const fileInput = document.getElementById('slipFileInput');
       const btnSubmit = document.getElementById('btnSubmitSlip');
       const statusText = document.getElementById('uploadStatus');
-      const customerName = document.getElementById('bName').innerText; 
+      const customerName = document.getElementById('bName').innerText; // ดึงชื่อลูกค้าจากการ์ดปัจจุบัน
 
       if (!fileInput.files || fileInput.files.length === 0) {
         alert("กรุณาเลือกรูปสลิปก่อนครับ");
@@ -1014,84 +1014,52 @@
       }
 
       const file = fileInput.files[0];
+      const reader = new FileReader();
 
       // เปลี่ยนสถานะ UI เพื่อให้ลูกค้ารู้ว่ากำลังโหลดอยู่
       btnSubmit.disabled = true;
       btnSubmit.innerText = "กำลังอัปโหลด...";
-      statusText.innerText = "กำลังบีบอัดรูปภาพและส่งข้อมูล... ห้ามปิดหน้าจอครับ";
+      statusText.innerText = "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ";
       statusText.className = "text-xs text-center mt-2 text-yellow-600 font-medium block";
 
-      // ----------------------------------------------------
-      // [ฟังก์ชันเสริม] บีบอัดรูปภาพก่อนส่ง เพื่อแก้ปัญหา Load failed
-      // ----------------------------------------------------
-      const compressImage = (imageFile) => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(imageFile);
-          reader.onload = (event) => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 800; // ย่อขนาดความกว้างสูงสุด 800px
-              let scaleSize = MAX_WIDTH / img.width;
-              
-              // ถ้าไฟล์เล็กอยู่แล้วไม่ต้องขยาย
-              if (scaleSize > 1) scaleSize = 1; 
-
-              canvas.width = MAX_WIDTH > img.width ? img.width : MAX_WIDTH;
-              canvas.height = img.height * scaleSize;
-
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              
-              // แปลงกลับเป็น Base64 แบบ JPEG และลดคุณภาพเหลือ 70%
-              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-              resolve(compressedBase64);
-            };
-            img.onerror = (error) => reject(error);
-          };
-          reader.onerror = (error) => reject(error);
-        });
-      };
-
-      try {
-        // รอให้บีบอัดรูปเสร็จก่อน
-        const compressedBase64Data = await compressImage(file);
+      reader.onload = async function() {
+        const base64Data = reader.result;
         
         const payload = {
           action: "uploadSlip",
           bookingId: currentBookingId, 
           customerName: customerName,
-          base64Data: compressedBase64Data, // ใช้รูปที่บีบอัดแล้ว
-          mimeType: "image/jpeg",
-          fileName: currentBookingId + "_slip.jpg"
+          base64Data: base64Data,
+          mimeType: file.type,
+          fileName: currentBookingId + "_" + file.name
         };
 
-        const response = await fetch(GAS_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
+        try {
+          const response = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
 
-        if (result.success) {
-          statusText.innerText = "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'";
-          statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
-          btnSubmit.innerText = "ส่งสลิปเรียบร้อย";
-          fileInput.parentElement.classList.add("hidden");
-          
-          document.getElementById('paymentSection').classList.add('hidden');
-          fetchData();
-        } else {
-          throw new Error(result.message);
+          if (result.success) {
+            statusText.innerText = "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'";
+            statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
+            btnSubmit.innerText = "ส่งสลิปเรียบร้อย";
+            fileInput.parentElement.classList.add("hidden");
+            
+            // [อัปเดต] สั่งซ่อนกล่องช่องทางการชำระเงินทันทีหลังจากส่งสำเร็จ
+            document.getElementById('paymentSection').classList.add('hidden');
+            
+            fetchData();
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          statusText.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
+          statusText.className = "text-xs text-center mt-2 text-red-600 block";
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "ลองใหม่อีกครั้ง";
         }
-      } catch (error) {
-        statusText.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
-        statusText.className = "text-xs text-center mt-2 text-red-600 block";
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = "ลองใหม่อีกครั้ง";
-      }
-    }
       };
 
       reader.onerror = function() {
