@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>ระบบจัดการคลาสเรียน</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -33,6 +33,15 @@
     @keyframes l16{ 
         50%,100% {background-position: 100% 100%,50% 0,0 100%} 
     }
+    
+    /* Toggle Switch สำหรับเปลี่ยนภาษา */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #ef4444;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #ef4444;
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 p-4 pb-24"> 
@@ -44,21 +53,37 @@
 
   <!-- Toast Notification -->
   <div id="toastMessage" class="fixed top-6 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium transition-all duration-300 opacity-0 pointer-events-none z-[60] translate-y-[-20px]">
-    ✓ บันทึกข้อมูลสำเร็จ
+    <span data-i18n="saveSuccess">✓ บันทึกข้อมูลสำเร็จ</span>
   </div>
 
-  <!-- Header & Profile -->
-  <div class="max-w-md md:max-w-xl mx-auto mb-6 flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-    <img id="profileImage" src="" alt="Profile" class="w-14 h-14 rounded-full border-2 border-blue-100 object-cover hidden">
-    <div>
-      <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-pink-500 to-red-500 text-transparent bg-clip-text">Yoka Booking</h1>
-      <p id="profileName" class="text-sm text-slate-500 mt-0.5">กำลังโหลดข้อมูล...</p>
+  <!-- Header & Profile & Language Switcher -->
+  <div class="max-w-md md:max-w-xl mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+    <div class="flex items-center space-x-4">
+      <img id="profileImage" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-pink-100 object-cover hidden">
+      <div>
+        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-pink-500 to-red-500 text-transparent bg-clip-text">Yoka Booking</h1>
+        <p id="profileName" class="text-sm text-slate-500 mt-0.5" data-i18n="loadingData">กำลังโหลดข้อมูล...</p>
+      </div>
+    </div>
+    
+    <!-- สวิตช์เปลี่ยนภาษา TH / EN -->
+    <div class="flex items-center">
+      <span class="text-[10px] font-bold text-slate-400 mr-1.5" id="langThText">TH</span>
+      <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+        <input type="checkbox" name="toggle" id="langToggle" onchange="toggleLanguage()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-300 appearance-none cursor-pointer transition-all duration-300 z-10 top-0.5 left-0.5"/>
+        <label for="langToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer transition-colors duration-300"></label>
+      </div>
+      <span class="text-[10px] font-bold text-slate-400" id="langEnText">EN</span>
     </div>
   </div>
 
+  <!-- ========================================== -->
+  <!-- TAB 1: จองคลาสเรียน (HOME) -->
+  <!-- ========================================== -->
+  
   <!-- VIEW 1: หมวดหมู่วัน (Day List) -->
   <div id="dayListView" class="max-w-md md:max-w-xl mx-auto hidden">
-    <h2 class="text-base font-bold text-slate-800 mb-3 px-1">เลือกวันที่ต้องการเรียน</h2>
+    <h2 class="text-base font-bold text-slate-800 mb-3 px-1" data-i18n="selectDateTitle">เลือกวันที่ต้องการเรียน</h2>
     <div id="dayContainer" class="grid grid-cols-2 gap-3 w-full"></div>
   </div>
 
@@ -67,7 +92,7 @@
     <div class="flex items-center mb-4 px-1">
       <button onclick="backToDayList()" class="flex items-center text-blue-600 text-sm font-medium hover:text-blue-800 transition mr-3 bg-blue-50 px-3 py-1.5 rounded-lg">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-        กลับ
+        <span data-i18n="btnBack">กลับ</span>
       </button>
       <h2 id="selectedDayTitle" class="text-base font-bold text-slate-800"></h2>
     </div>
@@ -76,39 +101,45 @@
 
   <!-- VIEW 3: ฟอร์มจองแบบกรอกข้อมูลและเลือกวัน -->
   <div id="bookingForm" class="max-w-md md:max-w-xl mx-auto mt-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden relative overflow-hidden">
-    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-pink-500 to-red-500"></div>
     <div class="flex justify-between items-center mb-4">
-      <h3 class="font-bold text-lg text-slate-800">ข้อมูลสำหรับยืนยันการจอง</h3>
+      <h3 class="font-bold text-lg text-slate-800" data-i18n="confirmBookingTitle">ข้อมูลสำหรับยืนยันการจอง</h3>
       <button onclick="closeForm()" class="text-slate-400 hover:text-red-500 p-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
       </button>
     </div>
     
-    <p id="selectedClassText" class="text-sm text-blue-600 font-medium mb-5 bg-blue-50 p-3 rounded-lg border border-blue-100"></p>
+    <p id="selectedClassText" class="text-sm text-pink-600 font-medium mb-5 bg-pink-50 p-3 rounded-lg border border-pink-100"></p>
     <input type="hidden" id="selectedClassId">
     
     <div class="space-y-3 mb-5">
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">ชื่อ - นามสกุล</label>
-        <input type="text" id="name" placeholder="ระบุชื่อ-สกุล" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1" data-i18n="labelName">ชื่อ - นามสกุล</label>
+        <input type="text" id="name" data-i18n-placeholder="placeholderName" placeholder="ระบุชื่อ-สกุล" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition">
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">เบอร์โทรศัพท์</label>
-        <input type="tel" id="phone" placeholder="ระบุเบอร์ติดต่อ (เช่น 0812345678)" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1" data-i18n="labelPhone">เบอร์โทรศัพท์</label>
+        <input type="tel" id="phone" data-i18n-placeholder="placeholderPhone" placeholder="ระบุเบอร์ติดต่อ (เช่น 0812345678)" class="w-full px-4 py-3 bg-slate-50 border-transparent rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition">
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-500 mb-1 ml-1 text-blue-600">เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *</label>
-        <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border border-blue-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition">
+        <label class="block text-xs font-medium text-pink-600 mb-1 ml-1" data-i18n="labelDate">เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *</label>
+        <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border border-pink-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition">
       </div>
     </div>
     
-    <label class="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-blue-50 transition">
-      <input type="checkbox" id="consentCheck" onchange="submitNewBooking()" class="mt-0.5 w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
-      <span class="text-sm text-slate-600 leading-tight">ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว <span class="font-bold text-blue-700">ยืนยันการจองทันที</span></span>
+    <label class="flex items-start space-x-3 cursor-pointer p-4 bg-slate-50 rounded-xl border border-slate-200 hover:bg-pink-50 transition">
+      <input type="checkbox" id="consentCheck" onchange="submitNewBooking()" class="mt-0.5 w-5 h-5 text-red-500 rounded border-gray-300 focus:ring-red-400">
+      <span class="text-sm text-slate-600 leading-tight">
+        <span data-i18n="consentText1">ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว</span> 
+        <span class="font-bold text-red-600" data-i18n="consentText2">ยืนยันการจองทันที</span>
+      </span>
     </label>
   </div>
 
-  <!-- VIEW 4: My Booking (แสดงข้อมูลการจองปัจจุบัน) -->
+  <!-- ========================================== -->
+  <!-- TAB 2: การจองของฉัน (MY BOOKINGS) -->
+  <!-- ========================================== -->
+
   <div id="myBookingView" class="max-w-md md:max-w-xl mx-auto hidden">
     
     <!-- กรณีไม่มีการจอง -->
@@ -116,86 +147,85 @@
       <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
       </div>
-      <h2 class="text-lg font-bold text-slate-800 mb-1">ยังไม่มีการจองคลาส</h2>
-      <p class="text-sm text-slate-500 mb-5">คุณยังไม่ได้ทำรายการจองคลาสเรียนในขณะนี้</p>
-      <button onclick="switchTab('home')" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 transition">
-        ไปเลือกคลาสเรียนกันเลย
+      <h2 class="text-lg font-bold text-slate-800 mb-1" data-i18n="emptyTitle">ยังไม่มีการจองคลาส</h2>
+      <p class="text-sm text-slate-500 mb-5" data-i18n="emptyDesc">คุณยังไม่ได้ทำรายการจองคลาสเรียนในขณะนี้</p>
+      <button onclick="switchTab('home')" class="bg-gradient-to-r from-pink-500 to-red-500 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:opacity-90 transition">
+        <span data-i18n="btnGoBook">ไปเลือกคลาสเรียนกันเลย</span>
       </button>
     </div>
 
     <!-- กรณีมีการจอง > 1 คลาส (หน้ารวม List View) -->
     <div id="myBookingsListState" class="hidden">
       <div class="flex justify-between items-center mb-4 px-1">
-        <h2 class="text-lg font-bold text-slate-800">คลาสเรียนของคุณ</h2>
-        <span id="bookingCountBadge" class="bg-blue-100 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold"></span>
+        <h2 class="text-lg font-bold text-slate-800" data-i18n="myClassesTitle">คลาสเรียนของคุณ</h2>
+        <span id="bookingCountBadge" class="bg-pink-100 text-pink-700 text-xs px-2.5 py-1 rounded-full font-bold"></span>
       </div>
       <div id="bookingsContainer" class="space-y-3"></div>
     </div>
 
     <!-- กรณีดูรายละเอียดการจอง (Detail View) -->
     <div id="detailViewWrapper" class="hidden">
-      <!-- ปุ่มกลับหน้ารวม -->
       <button id="btnBackToListContainer" onclick="showBookingsList()" class="mb-4 text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg flex items-center hover:bg-blue-100 w-fit hidden">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-        กลับหน้ารวม
+        <span data-i18n="btnBackToList">กลับหน้ารวม</span>
       </button>
 
       <div id="activeBookingState" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
-        <div class="h-1 w-full bg-gradient-to-r from-blue-500 to-red-500"></div>
+        <div class="h-1 w-full bg-gradient-to-r from-pink-500 to-red-500"></div>
         <div class="p-6">
           
           <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
-            <h2 class="text-lg font-bold text-slate-800">การจองของคุณ</h2>
-            <button id="btnEdit" onclick="toggleEdit()" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex items-center bg-blue-50 px-3 py-1.5 rounded-lg transition">
+            <h2 class="text-lg font-bold text-slate-800" data-i18n="bookingDetailTitle">การจองของคุณ</h2>
+            <button id="btnEdit" onclick="toggleEdit()" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center bg-pink-50 px-3 py-1.5 rounded-lg transition">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-              แก้ไขข้อมูล
+              <span data-i18n="btnEdit">แก้ไขข้อมูล</span>
             </button>
           </div>
           
-          <div id="editForm" class="hidden space-y-4 mb-5 p-5 bg-blue-50 rounded-xl border border-blue-100">
-            <p class="text-sm font-bold text-blue-800 border-b border-blue-200 pb-2">แก้ไขข้อมูลการจอง</p>
+          <div id="editForm" class="hidden space-y-4 mb-5 p-5 bg-pink-50 rounded-xl border border-pink-100">
+            <p class="text-sm font-bold text-pink-800 border-b border-pink-200 pb-2" data-i18n="editModeTitle">โหมดแก้ไขข้อมูล</p>
             
             <div class="space-y-3">
               <div>
-                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">ชื่อ-สกุล</label>
-                <input type="text" id="editName" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="ชื่อ-สกุล">
+                <label class="block text-[10px] font-bold text-pink-700 uppercase tracking-wide mb-1 ml-1" data-i18n="labelName">ชื่อ-สกุล</label>
+                <input type="text" id="editName" data-i18n-placeholder="placeholderName" class="w-full px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">เบอร์โทร</label>
-                <input type="tel" id="editPhone" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="เบอร์โทร">
+                <label class="block text-[10px] font-bold text-pink-700 uppercase tracking-wide mb-1 ml-1" data-i18n="labelPhone">เบอร์โทร</label>
+                <input type="tel" id="editPhone" data-i18n-placeholder="placeholderPhone" class="w-full px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">เลือกตารางเรียน (วัน และ เวลา)</label>
-                <select id="editClassSchedule" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></select>
+                <label class="block text-[10px] font-bold text-pink-700 uppercase tracking-wide mb-1 ml-1" data-i18n="labelEditSchedule">เลือกตารางเรียน (วัน และ เวลา)</label>
+                <select id="editClassSchedule" class="w-full px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none"></select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-blue-700 uppercase tracking-wide mb-1 ml-1">วันที่เข้าเรียน (ปฏิทิน)</label>
-                <input type="date" id="editBookingDate" class="w-full px-4 py-2 bg-white border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <label class="block text-[10px] font-bold text-pink-700 uppercase tracking-wide mb-1 ml-1" data-i18n="labelEditDate">วันที่เข้าเรียน (ปฏิทิน)</label>
+                <input type="date" id="editBookingDate" class="w-full px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               </div>
             </div>
 
             <div class="flex gap-2 mt-4 pt-2">
-              <button onclick="toggleEdit()" class="flex-1 bg-white border border-blue-200 text-slate-600 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50 transition">ยกเลิก</button>
-              <button onclick="saveEdit()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm">บันทึกข้อมูล</button>
+              <button onclick="toggleEdit()" class="flex-1 bg-white border border-pink-200 text-slate-600 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50 transition" data-i18n="btnCancelEdit">ยกเลิก</button>
+              <button onclick="saveEdit()" class="flex-1 bg-gradient-to-r from-pink-500 to-red-500 text-white py-2.5 rounded-lg text-sm font-medium hover:opacity-90 transition shadow-sm" data-i18n="btnSaveEdit">บันทึกข้อมูล</button>
             </div>
           </div>
 
           <div class="space-y-4 mb-6 bg-slate-50 p-5 rounded-xl border border-slate-100">
             <div>
-              <p class="text-xs text-slate-500 mb-0.5">ชื่อ-นามสกุล ผู้จอง</p>
+              <p class="text-xs text-slate-500 mb-0.5" data-i18n="showNameTitle">ชื่อ-นามสกุล ผู้จอง</p>
               <p id="bName" class="text-sm font-semibold text-slate-800"></p>
             </div>
             <div>
-              <p class="text-xs text-slate-500 mb-0.5">คลาสเรียน</p>
-              <p id="bClassName" class="text-base font-bold text-blue-700"></p>
+              <p class="text-xs text-slate-500 mb-0.5" data-i18n="showClassTitle">คลาสเรียน</p>
+              <p id="bClassName" class="text-base font-bold text-pink-600"></p>
             </div>
             <div class="flex gap-6 border-t border-slate-200 pt-3 mt-1">
               <div>
-                <p class="text-xs text-slate-500 mb-0.5">วันที่เรียน</p>
-                <p id="bSpecificDate" class="text-sm font-medium text-blue-600"></p>
+                <p class="text-xs text-slate-500 mb-0.5" data-i18n="showDateTitle">วันที่เรียน</p>
+                <p id="bSpecificDate" class="text-sm font-medium text-pink-600"></p>
               </div>
               <div>
-                <p class="text-xs text-slate-500 mb-0.5">เวลา</p>
+                <p class="text-xs text-slate-500 mb-0.5" data-i18n="showTimeTitle">เวลา</p>
                 <p id="bTime" class="text-sm font-medium text-slate-800"></p>
               </div>
             </div>
@@ -203,10 +233,10 @@
 
           <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
             <div>
-              <p class="text-xs text-slate-500 mb-1">สถานะการทำรายการ</p>
-              <span id="bookingStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 inline-block">รอชำระเงิน</span>
+              <p class="text-xs text-slate-500 mb-1" data-i18n="showStatusTitle">สถานะการทำรายการ</p>
+              <span id="bookingStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 inline-block"></span>
             </div>
-            <button id="btnCancel" onclick="cancelBooking()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition">
+            <button id="btnCancel" onclick="cancelBooking()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition" data-i18n="btnCancelBooking">
               ยกเลิกการจอง
             </button>
           </div>
@@ -215,15 +245,15 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM NAVIGATION BAR (จัดกึ่งกลางและปรับไอคอนแจ้งเตือนแดง) -->
   <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-white border-t border-slate-200 flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_15px_rgba(0,0,0,0.03)] z-40">
-    <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-blue-600 transition-colors">
+    <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-      <span class="text-[10px] font-bold">เลือกคลาส</span>
+      <span class="text-[10px] font-bold" data-i18n="navHome">เลือกคลาส</span>
     </button>
-    <button id="tabBooking" onclick="switchTab('mybooking')" class="flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-blue-500 transition-colors relative">
+    <button id="tabBooking" onclick="switchTab('mybooking')" class="flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors relative">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
-      <span class="text-[10px] font-medium">การจองของฉัน</span>
+      <span class="text-[10px] font-medium" data-i18n="navMyBooking">การจองของฉัน</span>
       <!-- Badge แจ้งเตือน ใหญ่ขึ้นและอยู่ด้านบนไอคอนตรงๆ -->
       <span id="navBadge" class="absolute top-1 right-[calc(50%-16px)] bg-red-500 w-3.5 h-3.5 rounded-full hidden border-2 border-white"></span>
     </button>
@@ -241,17 +271,210 @@
     let myBookingData = null; 
     let myBookingsData = []; 
 
-    // ตัวแปร Auto-Fill
     let savedName = "";
     let savedPhone = "";
+    let lineDisplayName = "";
 
+    // ------------------------------------
+    // DICTIONARY สำหรับระบบ 2 ภาษา
+    // ------------------------------------
+    let currentLang = localStorage.getItem('yoka_lang') || 'th'; // ดึงภาษาที่เคยเลือกไว้ ถ้าไม่มีให้เป็นไทย
+
+    const translations = {
+      th: {
+        loadingData: "กำลังโหลดข้อมูล...",
+        helloPrefix: "สวัสดีคุณ ",
+        selectDateTitle: "เลือกวันที่ต้องการเรียน",
+        classesCount: "คลาสเรียน",
+        btnBack: "กลับ",
+        confirmBookingTitle: "ข้อมูลสำหรับยืนยันการจอง",
+        labelName: "ชื่อ - นามสกุล",
+        placeholderName: "ระบุชื่อ-สกุล",
+        labelPhone: "เบอร์โทรศัพท์",
+        placeholderPhone: "ระบุเบอร์ติดต่อ (เช่น 0812345678)",
+        labelDate: "เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *",
+        consentText1: "ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว",
+        consentText2: "ยืนยันการจองทันที",
+        emptyTitle: "ยังไม่มีการจองคลาส",
+        emptyDesc: "คุณยังไม่ได้ทำรายการจองคลาสเรียนในขณะนี้",
+        btnGoBook: "ไปเลือกคลาสเรียนกันเลย",
+        myClassesTitle: "คลาสเรียนของคุณ",
+        classWord: "คลาส",
+        btnBackToList: "กลับหน้ารวม",
+        bookingDetailTitle: "การจองของคุณ",
+        btnEdit: "แก้ไขข้อมูล",
+        editModeTitle: "โหมดแก้ไขข้อมูล",
+        labelEditSchedule: "เลือกตารางเรียน (วัน และ เวลา)",
+        labelEditDate: "วันที่เข้าเรียน (ปฏิทิน)",
+        btnCancelEdit: "ยกเลิก",
+        btnSaveEdit: "บันทึกข้อมูล",
+        showNameTitle: "ชื่อ-นามสกุล ผู้จอง",
+        showClassTitle: "คลาสเรียน",
+        showDateTitle: "วันที่เรียน",
+        showTimeTitle: "เวลา",
+        showStatusTitle: "สถานะการทำรายการ",
+        btnCancelBooking: "ยกเลิกการจอง",
+        navHome: "เลือกคลาส",
+        navMyBooking: "การจองของฉัน",
+        saveSuccess: "✓ บันทึกข้อมูลสำเร็จ",
+        dayPrefix: "วัน",
+        statusPending: "รอชำระเงิน",
+        statusPaid: "ชำระเงินแล้ว",
+        statusSuccess: "จองสำเร็จ",
+        badgeFull: "เต็มแล้ว",
+        badgeAvailable: "ว่าง",
+        badgeSeat: "ที่",
+        btnFull: "คลาสเต็ม",
+        btnBook: "จองคลาส",
+        alertIncomplete: "กรุณากรอกข้อมูลให้ครบถ้วนครับ",
+        alertDateMismatch: "วันที่คุณเลือกไม่ตรงกับตารางเรียน กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ",
+        alertDuplicate: "คุณมีคลาสเรียนเวลาดังกล่าวแล้ว",
+        alertCancelConfirm: "คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?",
+        alertError: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
+      },
+      en: {
+        loadingData: "Loading data...",
+        helloPrefix: "Hello, ",
+        selectDateTitle: "Select Day to Study",
+        classesCount: "Classes",
+        btnBack: "Back",
+        confirmBookingTitle: "Booking Confirmation",
+        labelName: "Full Name",
+        placeholderName: "Enter your full name",
+        labelPhone: "Phone Number",
+        placeholderPhone: "Enter phone number",
+        labelDate: "Select Booking Date (DD/MM/YYYY) *",
+        consentText1: "I have verified my information and",
+        consentText2: "Confirm Booking",
+        emptyTitle: "No Bookings Yet",
+        emptyDesc: "You haven't booked any classes at the moment.",
+        btnGoBook: "Book a Class Now",
+        myClassesTitle: "Your Classes",
+        classWord: "Class",
+        btnBackToList: "Back to List",
+        bookingDetailTitle: "Booking Detail",
+        btnEdit: "Edit Info",
+        editModeTitle: "Edit Mode",
+        labelEditSchedule: "Select Schedule (Day & Time)",
+        labelEditDate: "Study Date (Calendar)",
+        btnCancelEdit: "Cancel",
+        btnSaveEdit: "Save Changes",
+        showNameTitle: "Booked By",
+        showClassTitle: "Class Name",
+        showDateTitle: "Study Date",
+        showTimeTitle: "Time",
+        showStatusTitle: "Booking Status",
+        btnCancelBooking: "Cancel Booking",
+        navHome: "Classes",
+        navMyBooking: "My Bookings",
+        saveSuccess: "✓ Saved successfully",
+        dayPrefix: "",
+        statusPending: "Pending",
+        statusPaid: "Paid",
+        statusSuccess: "Confirmed",
+        badgeFull: "Full",
+        badgeAvailable: "Left",
+        badgeSeat: "seats",
+        btnFull: "Class is Full",
+        btnBook: "Book Class",
+        alertIncomplete: "Please fill in all required fields.",
+        alertDateMismatch: "The selected date does not match the class schedule. Please select the correct date.",
+        alertDuplicate: "You already have a booking for this time slot.",
+        alertCancelConfirm: "Are you sure you want to cancel this booking?",
+        alertError: "An error occurred. Please try again."
+      }
+    };
+
+    // ฟังก์ชันแปลคำศัพท์ใน HTML
+    function applyLanguage() {
+      // เซ็ตสถานะสวิตช์ปุ่มตอนโหลดหน้า
+      const toggleBtn = document.getElementById('langToggle');
+      if(currentLang === 'en') {
+        toggleBtn.checked = true;
+        document.getElementById('langEnText').classList.replace('text-slate-400', 'text-slate-800');
+        document.getElementById('langThText').classList.replace('text-slate-800', 'text-slate-400');
+      } else {
+        toggleBtn.checked = false;
+        document.getElementById('langThText').classList.replace('text-slate-400', 'text-slate-800');
+        document.getElementById('langEnText').classList.replace('text-slate-800', 'text-slate-400');
+      }
+
+      // แปลข้อความที่มี attribute data-i18n
+      const elements = document.querySelectorAll('[data-i18n]');
+      elements.forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+          el.innerText = translations[currentLang][key];
+        }
+      });
+
+      // แปล placeholder
+      const inputs = document.querySelectorAll('[data-i18n-placeholder]');
+      inputs.forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[currentLang][key]) {
+          el.placeholder = translations[currentLang][key];
+        }
+      });
+
+      // อัปเดตข้อความทักทาย (ถ้ามีชื่อแล้ว)
+      updateGreetingName();
+      
+      // ถ้ามีการโหลดข้อมูลอยู่แล้ว ให้ re-render หน้าจอใหม่เพื่อเปลี่ยนภาษาที่อยู่ใน JavaScript
+      if (allClassData.length > 0) {
+        if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
+        if(!document.getElementById('classListView').classList.contains('hidden')) showClassesForDay(document.getElementById('selectedDayTitle').innerText.replace(translations[currentLang].dayPrefix,'').trim());
+        if(!document.getElementById('myBookingsListState').classList.contains('hidden')) renderBookingsList();
+        if(!document.getElementById('detailViewWrapper').classList.contains('hidden')) {
+           const b = myBookingsData.find(x => x.bookingId === currentBookingId);
+           if(b) setupMyBookingData(b);
+        }
+      }
+    }
+
+    // เมื่อลูกค้ากดสวิตช์
+    function toggleLanguage() {
+      const toggleBtn = document.getElementById('langToggle');
+      currentLang = toggleBtn.checked ? 'en' : 'th';
+      localStorage.setItem('yoka_lang', currentLang); // จำค่าลงเครื่อง
+      applyLanguage();
+    }
+
+    // ดึงข้อความสำหรับ Alert
+    function t(key) {
+      return translations[currentLang][key] || key;
+    }
+
+    // เปลี่ยนคำสถานะ
+    function translateStatus(statusTh) {
+      if(currentLang === 'th') return statusTh;
+      if(statusTh === 'รอชำระเงิน') return t('statusPending');
+      if(statusTh === 'ชำระเงินแล้ว') return t('statusPaid');
+      if(statusTh === 'จองสำเร็จ') return t('statusSuccess');
+      return statusTh;
+    }
+
+    function updateGreetingName() {
+      const nameToShow = savedName || lineDisplayName;
+      if(nameToShow) {
+        document.getElementById('profileName').innerText = `${t('helloPrefix')} ${nameToShow}`;
+      }
+    }
+
+    // ------------------------------------
+    // ฟังก์ชันหลัก (Core Functions)
+    // ------------------------------------
     async function main() {
+      applyLanguage(); // แปลครั้งแรกตอนโหลดโครงสร้าง
+
       await liff.init({ liffId: LIFF_ID });
       if (liff.isLoggedIn()) {
         const profile = await liff.getProfile();
         userUid = profile.userId;
+        lineDisplayName = profile.displayName;
         
-        document.getElementById('profileName').innerText = `สวัสดีคุณ ${profile.displayName}`;
+        updateGreetingName();
+        
         const profileImg = document.getElementById('profileImage');
         profileImg.src = profile.pictureUrl || "https://cdn-icons-png.flaticon.com/512/847/847969.png"; 
         profileImg.classList.remove('hidden');
@@ -283,7 +506,7 @@
           let cleanPhone = bookingsArr[0].phone ? bookingsArr[0].phone.replace(/'/g, "") : "";
           savedPhone = cleanPhone;
           
-          document.getElementById('profileName').innerText = `สวัสดีคุณ ${savedName}`;
+          updateGreetingName();
           
           document.getElementById('navBadge').classList.remove('hidden');
           switchTab('mybooking'); 
@@ -294,7 +517,7 @@
           switchTab('home'); 
         }
       } catch (error) {
-        alert("ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+        alert(t('alertError'));
       }
       document.getElementById('loading').style.display = 'none';
     }
@@ -304,9 +527,9 @@
       const tabBooking = document.getElementById('tabBooking');
       
       if (tab === 'home') {
-        tabHome.className = "flex-1 flex flex-col items-center p-2 text-blue-600 transition-colors";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors";
         tabHome.querySelector('span').className = "text-[10px] font-bold";
-        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-blue-500 transition-colors relative";
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors relative";
         tabBooking.querySelector('span').className = "text-[10px] font-medium";
         
         document.getElementById('myBookingView').classList.add('hidden');
@@ -316,9 +539,9 @@
         renderDayList();
         
       } else if (tab === 'mybooking') {
-        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-blue-600 transition-colors relative";
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors relative";
         tabBooking.querySelector('span').className = "text-[10px] font-bold";
-        tabHome.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-blue-500 transition-colors";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors";
         tabHome.querySelector('span').className = "text-[10px] font-medium";
         
         document.getElementById('dayListView').classList.add('hidden');
@@ -348,7 +571,7 @@
     }
 
     function renderBookingsList() {
-      document.getElementById('bookingCountBadge').innerText = `${myBookingsData.length} คลาส`;
+      document.getElementById('bookingCountBadge').innerText = `${myBookingsData.length} ${t('classWord')}`;
       let html = '';
       
       myBookingsData.forEach(booking => {
@@ -356,17 +579,18 @@
                         ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
         
         let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : (booking.date || booking.dayOfWeek);
+        let statusText = translateStatus(booking.status);
 
         html += `
-          <div onclick="showBookingDetail('${booking.bookingId}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center cursor-pointer hover:border-blue-300 transition group relative overflow-hidden">
-            <div class="absolute left-0 top-0 w-1 h-full bg-blue-400"></div>
+          <div onclick="showBookingDetail('${booking.bookingId}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center cursor-pointer hover:border-pink-300 transition group relative overflow-hidden">
+            <div class="absolute left-0 top-0 w-1 h-full bg-pink-400"></div>
             <div>
               <h3 class="font-bold text-slate-800 text-sm">${booking.className}</h3>
-              <p class="text-xs text-slate-500 mt-1">วันที่ ${showDate} | ${booking.time}</p>
+              <p class="text-xs text-slate-500 mt-1">${showDate} | ${booking.time}</p>
             </div>
             <div class="flex items-center text-right">
-              <span class="px-2 py-1 rounded-md text-[10px] font-bold ${statusColor} mr-3">${booking.status}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-blue-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+              <span class="px-2 py-1 rounded-md text-[10px] font-bold ${statusColor} mr-3">${statusText}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-pink-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </div>
           </div>
         `;
@@ -395,12 +619,12 @@
       uniqueDays.forEach(day => {
         const classCount = allClassData.filter(c => c.date === day).length;
         html += `
-          <div onclick="showClassesForDay('${day}')" class="min-w-0 bg-white py-4 px-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-blue-400 transition-all text-center">
-            <div class="w-11 h-11 bg-blue-50 rounded-full flex items-center justify-center mb-2 text-blue-600 shrink-0">
+          <div onclick="showClassesForDay('${day}')" class="min-w-0 bg-white py-4 px-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-pink-400 transition-all text-center">
+            <div class="w-11 h-11 bg-pink-50 rounded-full flex items-center justify-center mb-2 text-pink-600 shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
             <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${day}</span>
-            <span class="text-xs text-slate-500 mt-1">${classCount} คลาสเรียน</span>
+            <span class="text-xs text-slate-500 mt-1">${classCount} ${t('classesCount')}</span>
           </div>
         `;
       });
@@ -411,13 +635,16 @@
       document.getElementById('dayListView').classList.add('hidden');
       document.getElementById('classListView').classList.remove('hidden');
       
-      document.getElementById('selectedDayTitle').innerText = `${selectedDay}`;
+      document.getElementById('selectedDayTitle').innerText = `${t('dayPrefix')}${selectedDay}`;
       const filteredClasses = allClassData.filter(c => c.date === selectedDay);
       
       let html = '';
       filteredClasses.forEach(c => {
         const isFull = parseInt(c.remaining) <= 0;
         const badgeClass = isFull ? 'text-white bg-red-500' : 'text-white bg-green-500';
+        const badgeText = isFull ? t('badgeFull') : `${t('badgeAvailable')} ${c.remaining} ${t('badgeSeat')}`;
+        const btnText = isFull ? t('btnFull') : t('btnBook');
+        const btnStyle = isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white shadow-sm';
           
         html += `
           <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -429,11 +656,11 @@
             
             <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 gap-3">
               <span class="text-xs font-bold ${badgeClass} px-3 py-2.5 rounded-xl shadow-sm whitespace-nowrap text-center">
-                ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
+                ${badgeText}
               </span>
               <button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} 
-                class="flex-1 flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
-                ${isFull ? 'คลาสเต็ม' : 'จองคลาส'}
+                class="flex-1 flex justify-center items-center ${btnStyle} py-2.5 rounded-xl text-sm font-medium transition">
+                ${btnText}
               </button>
             </div>
           </div>
@@ -479,13 +706,14 @@
       relatedClasses.forEach(c => {
         const option = document.createElement('option');
         option.value = c.classId;
-        option.text = `วัน${c.date} | ${c.time}`;
+        option.text = `${t('dayPrefix')}${c.date} | ${c.time}`;
         if (c.classId === booking.classId) option.selected = true; 
         scheduleSelect.appendChild(option);
       });
 
       const statusBadge = document.getElementById('bookingStatus');
-      statusBadge.innerText = booking.status;
+      statusBadge.innerText = translateStatus(booking.status);
+
       if(booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") {
         statusBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 inline-block";
         document.getElementById('btnEdit').classList.add('hidden');
@@ -500,7 +728,7 @@
 
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
-      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${date} | ${time}</span><b class="text-base text-blue-800">${className}</b>`;
+      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${t('dayPrefix')}${date} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
       
       document.getElementById('name').value = savedName;
       document.getElementById('phone').value = savedPhone;
@@ -515,7 +743,7 @@
 
     function showToast(message) {
       const toast = document.getElementById('toastMessage');
-      toast.innerText = message;
+      toast.querySelector('span').innerText = message;
       toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
       toast.classList.add('opacity-100', 'translate-y-0');
       
@@ -534,7 +762,7 @@
       
       if(checkbox.checked) {
         if(!name || !phone || !bookingDate) {
-          alert("กรุณากรอก ชื่อ เบอร์โทร และ เลือกวันที่ต้องการเรียน ให้ครบถ้วนครับ"); 
+          alert(t('alertIncomplete')); 
           checkbox.checked = false; 
           return;
         }
@@ -553,7 +781,7 @@
           
           if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
               !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-            alert(`วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน${selectedClass.date}) กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ`);
+            alert(t('alertDateMismatch'));
             checkbox.checked = false;
             return;
           }
@@ -565,7 +793,7 @@
           );
 
           if (isDuplicate) {
-            alert("คุณมีคลาสเรียนเวลาดังกล่าวแล้ว");
+            alert(t('alertDuplicate'));
             checkbox.checked = false;
             return;
           }
@@ -595,7 +823,7 @@
       const classId = document.getElementById('editClassSchedule').value;
       const bookingDate = document.getElementById('editBookingDate').value;
 
-      if(!name || !phone || !bookingDate) return alert("กรุณากรอกข้อมูล วันที่และเวลา ให้ครบถ้วน");
+      if(!name || !phone || !bookingDate) return alert(t('alertIncomplete'));
 
       const selectedClass = allClassData.find(c => c.classId === classId);
       if (selectedClass) {
@@ -611,7 +839,7 @@
         
         if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
             !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-          alert(`วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน${selectedClass.date}) กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ`);
+          alert(t('alertDateMismatch'));
           return;
         }
 
@@ -623,7 +851,7 @@
         );
 
         if (isDuplicate) {
-          alert("คุณมีคลาสเรียนเวลาดังกล่าวแล้ว");
+          alert(t('alertDuplicate'));
           return;
         }
       }
@@ -636,16 +864,16 @@
         });
         
         await fetchData(); 
-        showToast("✓ บันทึกข้อมูลสำเร็จ");
+        showToast(t('saveSuccess'));
         
       } catch (error) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        alert(t('alertError'));
         document.getElementById('loading').style.display = 'none';
       }
     }
 
     async function cancelBooking() {
-      if(confirm("คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?")) {
+      if(confirm(t('alertCancelConfirm'))) {
         document.getElementById('loading').style.display = 'flex';
         await sendData({ action: "cancel", bookingId: currentBookingId });
       }
@@ -656,7 +884,7 @@
         await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
         fetchData(); 
       } catch (error) {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        alert(t('alertError'));
         document.getElementById('loading').style.display = 'none';
       }
     }
