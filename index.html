@@ -598,6 +598,34 @@
         scheduleSelect.appendChild(option);
       });
 
+      // ==========================================
+      // [ส่วนที่เพิ่มใหม่] รีเซ็ตกล่องอัปโหลดสลิป
+      // ==========================================
+      const fileInput = document.getElementById('slipFileInput');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const btnSubmit = document.getElementById('btnSubmitSlip');
+      const statusText = document.getElementById('uploadStatus');
+
+      if (fileInput) {
+        fileInput.value = '';
+        fileInput.parentElement.classList.remove("hidden");
+      }
+      if (fileNameDisplay) {
+        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
+        fileNameDisplay.classList.remove("text-green-600");
+        fileNameDisplay.classList.add("text-pink-600");
+      }
+      if (btnSubmit) {
+        btnSubmit.classList.add("hidden");
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = t('btnSubmitSlipText');
+      }
+      if (statusText) {
+        statusText.classList.add("hidden");
+        statusText.innerText = "";
+      }
+      // ==========================================
+
       const statusBadge = document.getElementById('bookingStatus');
       const paymentSection = document.getElementById('paymentSection');
       const thankYouContainer = document.getElementById('thankYouContainer');
