@@ -191,6 +191,17 @@
             </div>
             <button id="btnCancel" onclick="cancelBooking()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition" data-i18n="btnCancelBooking">ยกเลิกการจอง</button>
           </div>
+
+          <!-- [เพิ่มใหม่] ข้อความขอบคุณเมื่อชำระเงินแล้ว -->
+          <div id="thankYouContainer" class="hidden border-t border-dashed border-slate-200 pt-3 mt-4 text-right">
+            <p class="text-sm font-bold text-green-600 flex items-center justify-end gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span data-i18n="thankYouPayment">ขอบคุณสำหรับการชำระเงิน</span>
+            </p>
+          </div>
+
         </div>
       </div>
 
@@ -286,7 +297,7 @@
         btnSubmitSlipText: "ส่งข้อมูลยืนยัน", fileSelectedPrefix: "เลือกรูปแล้ว:", alertNoSlip: "กรุณาเลือกรูปสลิปก่อนครับ",
         uploadingText: "กำลังอัปโหลด...", uploadWarning: "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ",
         uploadSuccess: "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'", btnUploadDone: "ส่งสลิปเรียบร้อย",
-        uploadErrorPrefix: "❌ เกิดข้อผิดพลาด: ", btnTryAgain: "ลองใหม่อีกครั้ง"
+        uploadErrorPrefix: "❌ เกิดข้อผิดพลาด: ", btnTryAgain: "ลองใหม่อีกครั้ง", thankYouPayment: "ขอบคุณสำหรับการชำระเงิน"
       },
       en: {
         loadingData: "Loading data...", helloPrefix: "Hello, ", selectDateTitle: "Select Day to Study", classesCount: "Classes",
@@ -309,7 +320,7 @@
         btnSubmitSlipText: "Submit Payment", fileSelectedPrefix: "File selected:", alertNoSlip: "Please select a slip image first.",
         uploadingText: "Uploading...", uploadWarning: "Sending data... Please do not close the screen.",
         uploadSuccess: "✅ Upload successful! Status is 'Under Review'", btnUploadDone: "Slip Submitted",
-        uploadErrorPrefix: "❌ Error: ", btnTryAgain: "Try Again"
+        uploadErrorPrefix: "❌ Error: ", btnTryAgain: "Try Again", thankYouPayment: "Thank you for your payment"
       }
     };
 
@@ -556,6 +567,8 @@
 
       const statusBadge = document.getElementById('bookingStatus');
       const paymentSection = document.getElementById('paymentSection');
+      const thankYouContainer = document.getElementById('thankYouContainer');
+      
       statusBadge.innerText = translateStatus(booking.status);
 
       if(booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") {
@@ -563,10 +576,13 @@
         document.getElementById('btnEdit').classList.add('hidden');
         document.getElementById('btnCancel').classList.add('hidden');
         paymentSection.classList.add('hidden');
+        thankYouContainer.classList.remove('hidden'); // แสดงข้อความขอบคุณ
       } else {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block";
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
+        thankYouContainer.classList.add('hidden'); // ซ่อนข้อความขอบคุณ
+        
         if (booking.status === "รอตรวจสอบ") {
           paymentSection.classList.add('hidden');
         } else {
@@ -673,9 +689,6 @@
       catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
     }
 
-    // ====================================================
-    // [อัปเดต] ฟังก์ชันอัปโหลดและบีบอัดรูปแบบปลอดภัย ไม่ค้าง
-    // ====================================================
     function previewFile() {
       const fileInput = document.getElementById('slipFileInput');
       const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -692,7 +705,6 @@
       }
     }
 
-    // ฟังก์ชันบีบอัดรูปภาพ
     const compressImage = (imageFile) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
