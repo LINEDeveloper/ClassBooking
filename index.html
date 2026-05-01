@@ -215,7 +215,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (จัดกึ่งกลางและปรับไอคอนแจ้งเตือนแดง) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-white border-t border-slate-200 flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_15px_rgba(0,0,0,0.03)] z-40">
     <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-blue-600 transition-colors">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
@@ -251,9 +251,7 @@
         const profile = await liff.getProfile();
         userUid = profile.userId;
         
-        // กำหนดชื่อเริ่มต้นรอไว้ก่อน
         document.getElementById('profileName').innerText = `สวัสดีคุณ ${profile.displayName}`;
-        
         const profileImg = document.getElementById('profileImage');
         profileImg.src = profile.pictureUrl || "https://cdn-icons-png.flaticon.com/512/847/847969.png"; 
         profileImg.classList.remove('hidden');
@@ -285,7 +283,6 @@
           let cleanPhone = bookingsArr[0].phone ? bookingsArr[0].phone.replace(/'/g, "") : "";
           savedPhone = cleanPhone;
           
-          // ดึงชื่อ นามสกุล จากระบบมาแสดงแทนชื่อไลน์
           document.getElementById('profileName').innerText = `สวัสดีคุณ ${savedName}`;
           
           document.getElementById('navBadge').classList.remove('hidden');
@@ -435,8 +432,8 @@
                 ${isFull ? 'เต็มแล้ว' : `ว่าง ${c.remaining} ที่`}
               </span>
               <button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} 
-                class="flex-1 flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
-                ${isFull ? 'คลาสเต็ม' : 'เลือกคลาสนี้'}
+                class="flex-1 flex justify-center items-center ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white shadow-sm'} py-2.5 rounded-xl text-sm font-medium transition">
+                ${isFull ? 'คลาสเต็ม' : 'จองคลาส'}
               </button>
             </div>
           </div>
