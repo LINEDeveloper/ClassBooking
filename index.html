@@ -9,6 +9,16 @@
   <style>
     ::-webkit-scrollbar { display: none; }
     body { background-color: #f8fafc; }
+    
+    /* แก้ปัญหากรอบปฏิทิน (Date Input) แหว่ง/ไม่พอดีใน iOS/Safari */
+    input[type="date"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+    }
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+    }
     input[type="date"]::-webkit-calendar-picker-indicator {
       cursor: pointer;
       opacity: 0.6;
@@ -123,7 +133,7 @@
       </div>
       <div>
         <label class="block text-xs font-medium text-pink-600 mb-1 ml-1" data-i18n="labelDate">เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *</label>
-        <input type="date" id="bookingDate" class="w-full px-4 py-3 bg-slate-50 border border-pink-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition">
+        <input type="date" id="bookingDate" class="w-full appearance-none px-4 py-3 bg-slate-50 border border-pink-200 rounded-xl text-sm focus:bg-white focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition">
       </div>
     </div>
     
@@ -200,7 +210,7 @@
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-pink-700 uppercase tracking-wide mb-1 ml-1" data-i18n="labelEditDate">วันที่เข้าเรียน (ปฏิทิน)</label>
-                <input type="date" id="editBookingDate" class="w-full px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
+                <input type="date" id="editBookingDate" class="w-full appearance-none px-4 py-2 bg-white border border-pink-200 rounded-lg text-sm focus:ring-2 focus:ring-pink-500 focus:outline-none">
               </div>
             </div>
 
@@ -387,20 +397,18 @@
       }
     };
 
-    // [แก้ไขใหม่] ระบบแปลภาษา "วัน" ที่ฉลาดขึ้น โดยตัดคำว่า "วัน" หรือ "dayPrefix" ออกไปเลย
+    // ระบบแปลภาษา "วัน" ตัดคำว่า "วัน" หรือ "dayPrefix" ออกให้เหลือคำดิบๆ แล้วค่อยแปล
     function translateDayName(rawDate) {
       if(!rawDate) return "";
-      let cleanDay = rawDate.replace(/^วัน/, '').trim(); // ตัดคำว่า "วัน" ภาษาไทยออกก่อนเสมอ
+      let cleanDay = rawDate.replace(/^วัน/, '').trim(); 
       let cleanDayUpper = cleanDay.toUpperCase();
 
       const mapToTh = { "SUNDAY": "วันอาทิตย์", "MONDAY": "วันจันทร์", "TUESDAY": "วันอังคาร", "WEDNESDAY": "วันพุธ", "THURSDAY": "วันพฤหัสบดี", "FRIDAY": "วันศุกร์", "SATURDAY": "วันเสาร์" };
       const mapToEn = { "อาทิตย์": "SUNDAY", "จันทร์": "MONDAY", "อังคาร": "TUESDAY", "พุธ": "WEDNESDAY", "พฤหัสบดี": "THURSDAY", "ศุกร์": "FRIDAY", "เสาร์": "SATURDAY" };
 
       if (currentLang === 'th') {
-        // โหมดไทย ให้มีคำว่า "วัน" นำหน้าเสมอ
         return mapToTh[cleanDayUpper] || `วัน${cleanDay}`;
       } else {
-        // โหมดอังกฤษ โชว์คำภาษาอังกฤษเพียวๆ ไม่ต้องมีคำนำหน้า
         return mapToEn[cleanDay] || cleanDayUpper;
       }
     }
@@ -435,11 +443,9 @@
 
       updateGreetingName();
       
-      // ถ้ามีการโหลดข้อมูลอยู่แล้ว ให้ re-render หน้าจอใหม่เพื่อเปลี่ยนภาษา
       if (allClassData.length > 0) {
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
         
-        // อัปเดตภาษาที่หัวข้อวัน ตอนอยู่ในหน้า Class List
         if(!document.getElementById('classListView').classList.contains('hidden')) {
           const currentDayRaw = document.getElementById('selectedClassId').getAttribute('data-raw-day');
           if(currentDayRaw) {
