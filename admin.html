@@ -64,23 +64,24 @@
       
       <!-- VIEW 1: รายการจอง -->
       <div id="viewBooking" class="max-w-[1400px] mx-auto transition-opacity duration-300">
-        <!-- Stats -->
+        
+        <!-- Stats สรุปจำนวนตามสถานะ -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
-            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสลิป</p><p class="text-2xl font-bold text-slate-800" id="statWaitSlip">0</p></div>
-          </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
             <div><p class="text-sm text-slate-500 font-medium">รอชำระเงิน</p><p class="text-2xl font-bold text-slate-800" id="statWaitPay">0</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
+            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสอบสลิป</p><p class="text-2xl font-bold text-slate-800" id="statWaitSlip">0</p></div>
+          </div>
+          <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">จองสำเร็จทั้งหมด</p><p class="text-2xl font-bold text-slate-800" id="statSuccess">0</p></div>
+            <div><p class="text-sm text-slate-500 font-medium">ชำระเงินแล้ว</p><p class="text-2xl font-bold text-slate-800" id="statPaid">0</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
             <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">เช็คอินแล้ว</p><p class="text-2xl font-bold text-slate-800" id="statCheckIn">0</p></div>
+            <div><p class="text-sm text-slate-500 font-medium">เข้าเรียนแล้ว</p><p class="text-2xl font-bold text-slate-800" id="statCheckIn">0</p></div>
           </div>
         </div>
 
@@ -91,20 +92,21 @@
             <button onclick="fetchBookings()" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">🔄 รีเฟรชข้อมูล</button>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[900px]">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr class="bg-slate-50/50 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                  <th class="p-4 font-semibold">รหัสจอง</th>
-                  <th class="p-4 font-semibold">ลูกค้า</th>
-                  <th class="p-4 font-semibold">คลาสเรียน</th>
+                  <th class="p-4 font-semibold">Booking ID</th>
+                  <th class="p-4 font-semibold">ชื่อ-นามสกุล</th>
+                  <th class="p-4 font-semibold">เบอร์ติดต่อ</th>
                   <th class="p-4 font-semibold">วันที่เรียน</th>
-                  <th class="p-4 font-semibold text-center">สถานะการชำระ</th>
-                  <th class="p-4 font-semibold text-center">เข้าเรียน</th>
+                  <th class="p-4 font-semibold text-center">สถานะ</th>
+                  <th class="p-4 font-semibold text-center">สถานะเข้าเรียน</th>
+                  <th class="p-4 font-semibold text-center">เวลาเข้าเรียน</th>
                   <th class="p-4 font-semibold text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody id="bookingTableBody" class="text-sm text-slate-700">
-                <tr><td colspan="7" class="text-center p-8 text-slate-400">กรุณาล็อกอินเพื่อโหลดข้อมูล...</td></tr>
+                <tr><td colspan="8" class="text-center p-8 text-slate-400">กรุณาล็อกอินเพื่อโหลดข้อมูล...</td></tr>
               </tbody>
             </table>
           </div>
@@ -159,11 +161,12 @@
           <button onclick="closeSlipModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
         <div class="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100 space-y-3">
-          <div class="flex justify-between border-b border-slate-200 pb-2"><span class="text-slate-500 text-sm">รหัสจอง</span><span id="modalBkId" class="font-bold text-slate-800 font-mono"></span></div>
+          <div class="flex justify-between border-b border-slate-200 pb-2"><span class="text-slate-500 text-sm">Booking ID</span><span id="modalBkId" class="font-bold text-slate-800 font-mono"></span></div>
           <div class="flex justify-between border-b border-slate-200 pb-2"><span class="text-slate-500 text-sm">ชื่อลูกค้า</span><span id="modalCusName" class="font-bold text-slate-800"></span></div>
         </div>
         <div class="mt-auto space-y-3">
-          <button onclick="updateStatus('จองสำเร็จ')" id="btnApprove" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-600 transition">✅ ยืนยันได้รับเงิน (จองสำเร็จ)</button>
+          <!-- เปลี่ยนสถานะที่ส่งไปเป็น "ชำระเงินแล้ว" ตามโจทย์ -->
+          <button onclick="updateStatus('ชำระเงินแล้ว')" id="btnApprove" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-600 transition">✅ ตรวจสอบถูกต้อง (ชำระเงินแล้ว)</button>
           <button onclick="updateStatus('รอชำระเงิน')" id="btnReject" class="w-full bg-white border border-red-200 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 transition">❌ สลิปไม่ถูกต้อง (กลับไปรอชำระ)</button>
         </div>
       </div>
@@ -197,27 +200,23 @@
 
   <!-- JAVASCRIPT SYSTEM -->
   <script>
-    // ⚙️ URL API ของคุณ (ดึงข้อมูลจริง)
+    // ⚙️ URL API (ใช้ Web App URL ของคุณ)
     const API_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec";
     
     // --- ระบบ Login & Tabs ---
     function login() {
-      // (จำลองการล็อกอิน ถ้ารหัสผ่านถูกให้ผ่าน)
       document.getElementById('loginView').classList.add('opacity-0');
       setTimeout(() => {
         document.getElementById('loginView').classList.add('hidden');
         document.getElementById('dashboardView').classList.remove('hidden');
         setTimeout(() => document.getElementById('dashboardView').classList.remove('opacity-0'), 50);
         
-        // เมื่อล็อกอินเสร็จ ให้ดึงข้อมูลทันที!
         fetchBookings();
         fetchClasses();
       }, 300);
     }
 
-    function logout() {
-      location.reload(); // รีเฟรชหน้าเพื่อออกจากระบบ
-    }
+    function logout() { location.reload(); }
 
     function switchTab(tabName) {
       if (tabName === 'booking') {
@@ -236,7 +235,7 @@
     // --- 📡 ดึงข้อมูลรายการจอง ---
     async function fetchBookings() {
       const tbody = document.getElementById('bookingTableBody');
-      tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400 font-medium animate-pulse">กำลังซิงค์ข้อมูลจาก Google Sheet...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-slate-400 font-medium animate-pulse">กำลังซิงค์ข้อมูลจาก Google Sheet...</td></tr>';
       
       try {
         const response = await fetch(API_URL + "?action=get_bookings");
@@ -247,7 +246,7 @@
           updateStats(result.data);
         }
       } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล โปรดลองใหม่</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล โปรดลองใหม่</td></tr>';
       }
     }
 
@@ -256,48 +255,50 @@
       tbody.innerHTML = "";
       
       if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">ยังไม่มีรายการจองในระบบ</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 text-slate-400">ยังไม่มีรายการจองในระบบ</td></tr>';
         return;
       }
 
       data.forEach(item => {
-        // ตกแต่งป้ายสถานะ
+        // ตกแต่งป้ายสถานะการชำระเงิน
         let statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">${item.status}</span>`;
         let actionBtn = `<span class="text-slate-300 text-xs">-</span>`;
         
-        if (item.status === "รอตรวจสอบ") {
-          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600">รอตรวจสลิป</span>`;
-          // ถ้ามีรูปสลิปให้กดดูได้ ถ้าไม่มีก็ให้คลิกไม่ได้
+        if (item.status === "รอตรวจสอบ" || item.status === "รอตรวจสอบสลิป") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600">รอตรวจสอบ</span>`;
           const slipUrl = item.slipUrl || "https://via.placeholder.com/400x600?text=No+Slip+Image";
-          actionBtn = `<button onclick="openSlipModal('${item.bookingId}', '${item.name}', '${slipUrl}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">ตรวจสลิป</button>`;
+          actionBtn = `<button onclick="openSlipModal('${item.bookingId}', '${item.name}', '${slipUrl}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">ตรวจสอบสลิป</button>`;
         } 
         else if (item.status === "รอชำระเงิน") {
           statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-yellow-100 text-yellow-600">รอชำระเงิน</span>`;
-          actionBtn = `<button onclick="updateStatusFast('${item.bookingId}', 'ยกเลิกการจอง')" class="text-slate-400 hover:text-red-500 px-3 py-1 text-xs underline font-medium">ยกเลิกคิว</button>`;
+          actionBtn = `<button onclick="updateStatusFast('${item.bookingId}', 'ยกเลิก')" class="text-slate-400 hover:text-red-500 px-3 py-1 text-xs underline font-medium">ยกเลิกคิว</button>`;
         }
-        else if (item.status === "จองสำเร็จ") {
-          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">จองสำเร็จ</span>`;
+        else if (item.status === "ชำระเงินแล้ว" || item.status === "จองสำเร็จ") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">ชำระเงินแล้ว</span>`;
         }
 
-        // ตกแต่งสถานะเช็คอิน
-        let checkInUI = `<span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>`;
-        if (item.checkInStatus.includes("แล้ว") || item.checkInStatus === "✅") {
-          checkInUI = `<div class="flex flex-col items-center justify-center">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
+        // ตกแต่งป้ายสถานะเข้าเรียน
+        let checkInUI = `<span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>`;
+        if (item.checkInStatus === "เข้าเรียนแล้ว" || item.checkInStatus === "✅") {
+          checkInUI = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>เช็คอินแล้ว
-                        </span>
-                        ${item.checkInTime ? `<p class="text-[10px] text-slate-500 font-mono mt-1">${item.checkInTime}</p>` : ''}
-                      </div>`;
+                       </span>`;
+        } else if (item.checkInStatus !== "" && item.checkInStatus !== "-") {
+          checkInUI = `<span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium">${item.checkInStatus}</span>`;
         }
+
+        // เวลาเข้าเรียน
+        let timeUI = item.checkInTime ? `<span class="text-[11px] text-slate-500 font-mono">${item.checkInTime}</span>` : `<span class="text-slate-300">-</span>`;
 
         const row = `
           <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition">
-            <td class="p-4 font-mono text-slate-500">${item.bookingId}</td>
-            <td class="p-4"><p class="font-bold text-slate-800">${item.name}</p><p class="text-xs text-slate-400">${item.phone}</p></td>
-            <td class="p-4 text-pink-600 font-medium">${item.classId}</td>
+            <td class="p-4 font-mono text-slate-500 font-medium">${item.bookingId}</td>
+            <td class="p-4 font-bold text-slate-800">${item.name}</td>
+            <td class="p-4 text-slate-600 font-mono text-sm">${item.phone}</td>
             <td class="p-4 text-slate-600">${item.bookingDate}</td>
             <td class="p-4 text-center">${statusBadge}</td>
             <td class="p-4 text-center">${checkInUI}</td>
+            <td class="p-4 text-center">${timeUI}</td>
             <td class="p-4 text-center">${actionBtn}</td>
           </tr>
         `;
@@ -306,16 +307,16 @@
     }
 
     function updateStats(data) {
-      let waitSlip = 0, waitPay = 0, success = 0, checkedIn = 0;
+      let waitSlip = 0, waitPay = 0, paid = 0, checkedIn = 0;
       data.forEach(item => {
-        if (item.status === "รอตรวจสอบ") waitSlip++;
+        if (item.status === "รอตรวจสอบ" || item.status === "รอตรวจสอบสลิป") waitSlip++;
         if (item.status === "รอชำระเงิน") waitPay++;
-        if (item.status === "จองสำเร็จ") success++;
-        if (item.checkInStatus.includes("แล้ว") || item.checkInStatus === "✅") checkedIn++;
+        if (item.status === "ชำระเงินแล้ว" || item.status === "จองสำเร็จ") paid++;
+        if (item.checkInStatus === "เข้าเรียนแล้ว" || item.checkInStatus === "✅") checkedIn++;
       });
       document.getElementById('statWaitSlip').innerText = waitSlip;
       document.getElementById('statWaitPay').innerText = waitPay;
-      document.getElementById('statSuccess').innerText = success;
+      document.getElementById('statPaid').innerText = paid;
       document.getElementById('statCheckIn').innerText = checkedIn;
     }
 
@@ -331,7 +332,7 @@
         if (result.status === "success") {
           tbody.innerHTML = "";
           result.data.forEach(c => {
-            const statusStyle = c.status === "เปิดรับ" 
+            const statusStyle = c.status === "เปิดรับ" || c.status === "เปิดรับสมัคร" 
               ? "bg-green-100 text-green-600" 
               : "bg-slate-200 text-slate-500";
               
@@ -374,7 +375,6 @@
 
     async function updateStatus(newStatus) {
       const bookingId = document.getElementById('modalBkId').innerText;
-      
       document.getElementById('btnApprove').innerText = "กำลังบันทึก...";
       
       try {
@@ -384,7 +384,7 @@
         });
         closeSlipModal();
         fetchBookings(); // โหลดตารางใหม่
-        document.getElementById('btnApprove').innerText = "✅ ยืนยันได้รับเงิน (จองสำเร็จ)";
+        document.getElementById('btnApprove').innerText = "✅ ตรวจสอบถูกต้อง (ชำระเงินแล้ว)";
       } catch(e) { alert("เกิดข้อผิดพลาด"); }
     }
 
@@ -401,7 +401,7 @@
 
     // --- ระบบจัดการคลาส (เพิ่ม/แก้ไข) ---
     function openClassModal(id='', name='', time='', status='เปิดรับ') {
-      document.getElementById('classModalTitle').innerText = id ? "แก้ไขคลาสเรียน" : "เพิ่มคลาสเรียนใหม่";
+      document.getElementById('classModalTitle').innerText = id ? "แก้ไขคลาสเรียน" : "เพิ่มคลาสเรียน";
       document.getElementById('mClassId').value = id;
       document.getElementById('mClassName').value = name;
       document.getElementById('mClassTime').value = time;
