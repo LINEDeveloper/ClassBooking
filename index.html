@@ -9,8 +9,6 @@
   <style>
     ::-webkit-scrollbar { display: none; }
     body { background-color: #f8fafc; }
-    
-    /* แก้ปัญหากรอบปฏิทิน (Date Input) แหว่ง/ไม่พอดีใน iOS/Safari */
     input[type="date"] {
       -webkit-appearance: none;
       appearance: none;
@@ -111,7 +109,6 @@
 
   <!-- VIEW 3: ฟอร์มจองแบบกรอกข้อมูลและเลือกวัน -->
   <div id="bookingForm" class="max-w-md md:max-w-xl mx-auto mt-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hidden relative overflow-hidden">
-    <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-pink-500 to-red-500"></div>
     <div class="flex justify-between items-center mb-4">
       <h3 class="font-bold text-lg text-slate-800" data-i18n="confirmBookingTitle">ข้อมูลสำหรับยืนยันการจอง</h3>
       <button onclick="closeForm()" class="text-slate-400 hover:text-red-500 p-1">
@@ -181,7 +178,6 @@
       </button>
 
       <div id="activeBookingState" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative">
-        <div class="h-1 w-full bg-gradient-to-r from-pink-500 to-red-500"></div>
         <div class="p-6">
           
           <div class="flex justify-between items-center mb-5 pb-4 border-b border-slate-100">
@@ -397,7 +393,6 @@
       }
     };
 
-    // ระบบแปลภาษา "วัน" ตัดคำว่า "วัน" หรือ "dayPrefix" ออกให้เหลือคำดิบๆ แล้วค่อยแปล
     function translateDayName(rawDate) {
       if(!rawDate) return "";
       let cleanDay = rawDate.replace(/^วัน/, '').trim(); 
