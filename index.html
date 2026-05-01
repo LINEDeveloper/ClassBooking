@@ -250,7 +250,7 @@
         </div>
       </div>
 
-      <!-- [ใหม่] กล่องช่องทางการชำระเงิน (จะซ่อนเมื่อชำระแล้ว) -->
+      <!-- กล่องช่องทางการชำระเงิน (จะซ่อนเมื่อชำระหรือรอตรวจสอบแล้ว) -->
       <div id="paymentSection" class="mt-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative hidden">
         <div class="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -274,9 +274,7 @@
             <span data-i18n="saveQrHint">สามารถกดค้างที่รูปเพื่อบันทึก QR Code</span>
           </p>
 
-          <!-- ========================================== -->
-          <!-- [เพิ่มใหม่] ส่วนอัปโหลดสลิป -->
-          <!-- ========================================== -->
+          <!-- ส่วนอัปโหลดสลิป -->
           <div class="mt-5 border-t border-slate-100 pt-4 text-left">
             <p class="text-sm font-bold text-slate-700 mb-2">ยืนยันการชำระเงิน</p>
             
@@ -296,7 +294,6 @@
 
             <p id="uploadStatus" class="text-xs text-center mt-2 hidden"></p>
           </div>
-          <!-- ========================================== -->
 
         </div>
       </div>
@@ -543,98 +540,7 @@
         document.getElementById('profileName').innerText = `${t('helloPrefix')}${nameToShow}`;
       }
     }
-    // ==========================================
-    // [เพิ่มใหม่] ฟังก์ชันจัดการไฟล์สลิปและการอัปโหลด
-    // ==========================================
-    function previewFile() {
-      const fileInput = document.getElementById('slipFileInput');
-      const fileNameDisplay = document.getElementById('fileNameDisplay');
-      const btnSubmit = document.getElementById('btnSubmitSlip');
 
-      if (fileInput.files && fileInput.files[0]) {
-        fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ เลือกรูปแล้ว: ${fileInput.files[0].name}</span>`;
-        fileNameDisplay.classList.remove("text-pink-600");
-        fileNameDisplay.classList.add("text-green-600");
-        btnSubmit.classList.remove("hidden");
-      } else {
-        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> อัปโหลดรูปสลิป`;
-        fileNameDisplay.classList.add("text-pink-600");
-        fileNameDisplay.classList.remove("text-green-600");
-        btnSubmit.classList.add("hidden");
-      }
-    }
-
-    async function submitSlip() {
-      const fileInput = document.getElementById('slipFileInput');
-      const btnSubmit = document.getElementById('btnSubmitSlip');
-      const statusText = document.getElementById('uploadStatus');
-      const customerName = document.getElementById('bName').innerText; // ดึงชื่อลูกค้าจากการ์ดปัจจุบัน
-
-      if (!fileInput.files || fileInput.files.length === 0) {
-        alert("กรุณาเลือกรูปสลิปก่อนครับ");
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-
-      // เปลี่ยนสถานะ UI เพื่อให้ลูกค้ารู้ว่ากำลังโหลดอยู่
-      btnSubmit.disabled = true;
-      btnSubmit.innerText = "กำลังอัปโหลด...";
-      statusText.innerText = "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ";
-      statusText.className = "text-xs text-center mt-2 text-yellow-600 font-medium block";
-
-      reader.onload = async function() {
-        const base64Data = reader.result;
-        
-        const payload = {
-          action: "uploadSlip",
-          bookingId: currentBookingId, 
-          customerName: customerName,
-          base64Data: base64Data,
-          mimeType: file.type,
-          fileName: currentBookingId + "_" + file.name
-        };
-
-        try {
-          const response = await fetch(GAS_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-          });
-          const result = await response.json();
-
-          if (result.success) {
-            statusText.innerText = "ระบบแจ้งยืนยันการจองคลาส ทางแชทเร็วๆนี้";
-            statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
-            btnSubmit.innerText = "ส่งสลิปเรียบร้อย";
-            fileInput.parentElement.classList.add("hidden");
-            
-            // สั่งดึงข้อมูลล่าสุดมาจาก Google Sheet ใหม่ เพื่อให้หน้าต่างสลิปหายไปและสถานะถูกอัปเดตเป็นรอตรวจสอบ
-            fetchData();
-          } else {
-            throw new Error(result.message);
-          }
-        } catch (error) {
-          statusText.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
-          statusText.className = "text-xs text-center mt-2 text-red-600 block";
-          btnSubmit.disabled = false;
-          btnSubmit.innerText = "ลองใหม่อีกครั้ง";
-        }
-      };
-
-      reader.onerror = function() {
-        alert("เกิดข้อผิดพลาดในการอ่านไฟล์จากมือถือของคุณ");
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = "ส่งข้อมูลยืนยัน";
-      };
-
-      reader.readAsDataURL(file); // เริ่มแปลงรูปเป็น Base64
-    }
-    // ==========================================
-
-    // ------------------------------------
-    // ฟังก์ชันหลัก (Core Functions)
-    // ------------------------------------
     async function main() {
       applyLanguage(); 
 
@@ -746,7 +652,6 @@
       let html = '';
       
       myBookingsData.forEach(booking => {
-        // [แก้ไข] สีสถานะในหน้ารวมคลาส
         let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") 
                         ? "bg-green-500 text-white" : "bg-yellow-100 text-yellow-700";
         
@@ -890,17 +795,23 @@
       
       statusBadge.innerText = translateStatus(booking.status);
 
-      // [แก้ไข] สีสถานะและการซ่อนกล่องในหน้ารายละเอียดการจอง
+      // [อัปเดต] การซ่อนกล่องชำระเงิน
       if(booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-green-500 text-white inline-block";
         document.getElementById('btnEdit').classList.add('hidden');
         document.getElementById('btnCancel').classList.add('hidden');
-        paymentSection.classList.add('hidden'); // ซ่อนกล่องจ่ายเงินเมื่อจ่ายแล้ว
+        paymentSection.classList.add('hidden');
       } else {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block";
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
-        paymentSection.classList.remove('hidden'); // โชว์กล่องจ่ายเงินเมื่อรอจ่าย
+        
+        // ซ่อนกล่องจ่ายเงินเมื่อสถานะคือ รอตรวจสอบ (อัปโหลดสลิปแล้ว)
+        if (booking.status === "รอตรวจสอบ") {
+          paymentSection.classList.add('hidden');
+        } else {
+          paymentSection.classList.remove('hidden');
+        }
       }
       document.getElementById('editForm').classList.add('hidden'); 
     }
@@ -1068,6 +979,96 @@
         alert(t('alertError'));
         document.getElementById('loading').style.display = 'none';
       }
+    }
+
+    // ==========================================
+    // [เพิ่มใหม่] ฟังก์ชันจัดการไฟล์สลิปและการอัปโหลด
+    // ==========================================
+    function previewFile() {
+      const fileInput = document.getElementById('slipFileInput');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const btnSubmit = document.getElementById('btnSubmitSlip');
+
+      if (fileInput.files && fileInput.files[0]) {
+        fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ เลือกรูปแล้ว: ${fileInput.files[0].name}</span>`;
+        fileNameDisplay.classList.remove("text-pink-600");
+        fileNameDisplay.classList.add("text-green-600");
+        btnSubmit.classList.remove("hidden");
+      } else {
+        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> อัปโหลดรูปสลิป`;
+        fileNameDisplay.classList.add("text-pink-600");
+        fileNameDisplay.classList.remove("text-green-600");
+        btnSubmit.classList.add("hidden");
+      }
+    }
+
+    async function submitSlip() {
+      const fileInput = document.getElementById('slipFileInput');
+      const btnSubmit = document.getElementById('btnSubmitSlip');
+      const statusText = document.getElementById('uploadStatus');
+      const customerName = document.getElementById('bName').innerText; // ดึงชื่อลูกค้าจากการ์ดปัจจุบัน
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert("กรุณาเลือกรูปสลิปก่อนครับ");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      // เปลี่ยนสถานะ UI เพื่อให้ลูกค้ารู้ว่ากำลังโหลดอยู่
+      btnSubmit.disabled = true;
+      btnSubmit.innerText = "กำลังอัปโหลด...";
+      statusText.innerText = "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ";
+      statusText.className = "text-xs text-center mt-2 text-yellow-600 font-medium block";
+
+      reader.onload = async function() {
+        const base64Data = reader.result;
+        
+        const payload = {
+          action: "uploadSlip",
+          bookingId: currentBookingId, 
+          customerName: customerName,
+          base64Data: base64Data,
+          mimeType: file.type,
+          fileName: currentBookingId + "_" + file.name
+        };
+
+        try {
+          const response = await fetch(GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            statusText.innerText = "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'";
+            statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
+            btnSubmit.innerText = "ส่งสลิปเรียบร้อย";
+            fileInput.parentElement.classList.add("hidden");
+            
+            // [อัปเดต] สั่งซ่อนกล่องช่องทางการชำระเงินทันทีหลังจากส่งสำเร็จ
+            document.getElementById('paymentSection').classList.add('hidden');
+            
+            fetchData();
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          statusText.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
+          statusText.className = "text-xs text-center mt-2 text-red-600 block";
+          btnSubmit.disabled = false;
+          btnSubmit.innerText = "ลองใหม่อีกครั้ง";
+        }
+      };
+
+      reader.onerror = function() {
+        alert("เกิดข้อผิดพลาดในการอ่านไฟล์จากมือถือของคุณ");
+        btnSubmit.disabled = false;
+        btnSubmit.innerText = "ส่งข้อมูลยืนยัน";
+      };
+
+      reader.readAsDataURL(file); // เริ่มแปลงรูปเป็น Base64
     }
 
     main();
