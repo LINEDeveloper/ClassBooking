@@ -231,7 +231,7 @@
             
             <label class="block w-full border-2 border-dashed border-pink-200 rounded-xl p-4 text-center cursor-pointer hover:bg-pink-50 transition duration-200">
               <span class="text-sm text-pink-600 font-medium flex items-center justify-center gap-2" id="fileNameDisplay">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 <span data-i18n="uploadSlipText">อัปโหลดรูปสลิป</span>
               </span>
               <input type="file" id="slipFileInput" accept="image/*" class="hidden" onchange="previewFile()">
@@ -260,9 +260,20 @@
   </div>
 
   <script>
+    // ==========================================
     const GAS_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec"; 
     const LIFF_ID = "2009934915-533SfMV4"; 
-    let userUid = "", currentBookingId = "", allClassData = [], myBookingsData = [], savedName = "", savedPhone = "", lineDisplayName = "", currentLang = localStorage.getItem('yoka_lang') || 'th'; 
+    // ==========================================
+
+    let userUid = "";
+    let currentBookingId = "";
+    let allClassData = []; 
+    let myBookingData = null; 
+    let myBookingsData = []; 
+    let savedName = "";
+    let savedPhone = "";
+    let lineDisplayName = "";
+    let currentLang = localStorage.getItem('yoka_lang') || 'th'; 
 
     const translations = {
       th: {
@@ -313,132 +324,258 @@
       }
     };
 
-    function translateDayName(raw) {
-      if(!raw) return "";
-      let clean = raw.replace(/^วัน/, '').trim().toUpperCase();
-      const map = { "SUNDAY":"วันอาทิตย์", "MONDAY":"วันจันทร์", "TUESDAY":"วันอังคาร", "WEDNESDAY":"วันพุธ", "THURSDAY":"วันพฤหัสบดี", "FRIDAY":"วันศุกร์", "SATURDAY":"วันเสาร์", "อาทิตย์":"SUNDAY", "จันทร์":"MONDAY", "อังคาร":"TUESDAY", "พุธ":"WEDNESDAY", "พฤหัสบดี":"THURSDAY", "ศุกร์":"FRIDAY", "เสาร์":"SATURDAY" };
-      return currentLang === 'th' ? (map[clean] || `วัน${raw.replace('วัน','')}`) : (map[raw.replace('วัน','')] || clean);
+    function translateDayName(rawDate) {
+      if(!rawDate) return "";
+      let cleanDay = rawDate.replace(/^วัน/, '').trim(); 
+      let cleanDayUpper = cleanDay.toUpperCase();
+      const mapToTh = { "SUNDAY": "วันอาทิตย์", "MONDAY": "วันจันทร์", "TUESDAY": "วันอังคาร", "WEDNESDAY": "วันพุธ", "THURSDAY": "วันพฤหัสบดี", "FRIDAY": "วันศุกร์", "SATURDAY": "วันเสาร์" };
+      const mapToEn = { "อาทิตย์": "SUNDAY", "จันทร์": "MONDAY", "อังคาร": "TUESDAY", "พุธ": "WEDNESDAY", "พฤหัสบดี": "THURSDAY", "ศุกร์": "FRIDAY", "เสาร์": "SATURDAY" };
+      return currentLang === 'th' ? (mapToTh[cleanDayUpper] || `วัน${cleanDay}`) : (mapToEn[cleanDay] || cleanDayUpper);
     }
 
     function applyLanguage() {
-      const isEn = currentLang === 'en';
-      document.getElementById('langToggle').checked = isEn;
-      document.getElementById('langEnText').className = isEn ? "text-[10px] font-bold text-slate-800" : "text-[10px] font-bold text-slate-400";
-      document.getElementById('langThText').className = isEn ? "text-[10px] font-bold text-slate-400 mr-1.5" : "text-[10px] font-bold text-slate-800 mr-1.5";
-      document.querySelectorAll('[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (translations[currentLang][k]) el.innerText = translations[currentLang][k]; });
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const k = el.getAttribute('data-i18n-placeholder'); if (translations[currentLang][k]) el.placeholder = translations[currentLang][k]; });
+      const toggleBtn = document.getElementById('langToggle');
+      toggleBtn.checked = currentLang === 'en';
+      document.getElementById('langEnText').className = currentLang === 'en' ? "text-[10px] font-bold text-slate-800" : "text-[10px] font-bold text-slate-400";
+      document.getElementById('langThText').className = currentLang === 'th' ? "text-[10px] font-bold text-slate-800 mr-1.5" : "text-[10px] font-bold text-slate-400 mr-1.5";
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[currentLang][key]) el.placeholder = translations[currentLang][key];
+      });
+
       updateGreetingName();
+      
       if (allClassData.length > 0) {
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
         if(!document.getElementById('classListView').classList.contains('hidden')) {
-          const day = document.getElementById('selectedClassId').getAttribute('data-raw-day');
-          if(day) renderClassesOnly(day);
+          const currentDayRaw = document.getElementById('selectedClassId').getAttribute('data-raw-day');
+          if(currentDayRaw) showClassesForDay(currentDayRaw);
         }
         if(!document.getElementById('myBookingsListState').classList.contains('hidden')) renderBookingsList();
         if(!document.getElementById('detailViewWrapper').classList.contains('hidden')) {
-          const b = myBookingsData.find(x => x.bookingId === currentBookingId);
-          if(b) setupMyBookingData(b);
+           const b = myBookingsData.find(x => x.bookingId === currentBookingId);
+           if(b) setupMyBookingData(b);
         }
       }
     }
 
-    function toggleLanguage() { currentLang = document.getElementById('langToggle').checked ? 'en' : 'th'; localStorage.setItem('yoka_lang', currentLang); applyLanguage(); }
+    function toggleLanguage() {
+      currentLang = document.getElementById('langToggle').checked ? 'en' : 'th';
+      localStorage.setItem('yoka_lang', currentLang); 
+      applyLanguage();
+    }
+
     function t(key) { return translations[currentLang][key] || key; }
-    function translateStatus(st) { const map = { "รอชำระเงิน":t('statusPending'), "ชำระเงินแล้ว":t('statusPaid'), "จองสำเร็จ":t('statusSuccess'), "รอตรวจสอบ":t('statusUnderReview') }; return map[st] || st; }
-    function updateGreetingName() { const n = savedName || lineDisplayName; if(n) document.getElementById('profileName').innerText = `${t('helloPrefix')}${n}`; }
+
+    function translateStatus(statusTh) {
+      if(currentLang === 'th') return statusTh;
+      if(statusTh === 'รอชำระเงิน') return t('statusPending');
+      if(statusTh === 'ชำระเงินแล้ว') return t('statusPaid');
+      if(statusTh === 'จองสำเร็จ') return t('statusSuccess');
+      if(statusTh === 'รอตรวจสอบ') return t('statusUnderReview');
+      return statusTh;
+    }
+
+    function updateGreetingName() {
+      const nameToShow = savedName || lineDisplayName;
+      if(nameToShow) document.getElementById('profileName').innerText = `${t('helloPrefix')}${nameToShow}`;
+    }
 
     async function main() {
       applyLanguage(); 
       await liff.init({ liffId: LIFF_ID });
       if (liff.isLoggedIn()) {
-        const p = await liff.getProfile();
-        userUid = p.userId; lineDisplayName = p.displayName;
-        document.getElementById('profileImage').src = p.pictureUrl || "https://cdn-icons-png.flaticon.com/512/847/847969.png"; 
-        document.getElementById('profileImage').classList.remove('hidden');
+        const profile = await liff.getProfile();
+        userUid = profile.userId;
+        lineDisplayName = profile.displayName;
+        updateGreetingName();
+        const profileImg = document.getElementById('profileImage');
+        profileImg.src = profile.pictureUrl || "https://cdn-icons-png.flaticon.com/512/847/847969.png"; 
+        profileImg.classList.remove('hidden');
         await fetchData(); 
         
-        // ระบบอัปเดตตัวเลขว่างแบบเรียลไทม์ทุก 10 วินาที
-        setInterval(fetchDataSilent, 10000); 
-      } else { liff.login(); }
+        // [เพิ่มใหม่] ระบบ Auto-Refresh ทุกๆ 10 วินาที (แบบเงียบๆ ไม่ขึ้นตัวโหลด)
+        setInterval(fetchDataSilent, 10000);
+      } else {
+        liff.login();
+      }
     }
 
-    // ฟังก์ชันดึงข้อมูลแบบเงียบๆ ไม่ให้โชว์ Loading
+    // [เพิ่มใหม่] ฟังก์ชันดึงข้อมูลแบบเบื้องหลังเพื่อให้ UI อัปเดตทันทีเมื่อฐานข้อมูลเปลี่ยน
     async function fetchDataSilent() {
       try {
-        const res = await fetch(`${GAS_URL}?uid=${userUid}`);
-        const d = await res.json();
-        allClassData = d.classes;
-        myBookingsData = (d.bookings && d.bookings.length > 0) ? d.bookings : (d.booking ? [d.booking] : []);
-        
-        // อัปเดตเฉพาะส่วนที่กำลังเปิดอยู่
+        const response = await fetch(`${GAS_URL}?uid=${userUid}`);
+        const data = await response.json();
+        allClassData = data.classes; 
+        let bookingsArr = (data.bookings && data.bookings.length > 0) ? data.bookings : (data.booking ? [data.booking] : []);
+        myBookingsData = bookingsArr;
+
+        // อัปเดตการแสดงผลในหน้าจอที่เปิดอยู่
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
         if(!document.getElementById('classListView').classList.contains('hidden')) {
-           const day = document.getElementById('selectedClassId').getAttribute('data-raw-day');
-           if(day) renderClassesOnly(day);
+          const currentDayRaw = document.getElementById('selectedClassId').getAttribute('data-raw-day');
+          if(currentDayRaw) renderClassesOnly(currentDayRaw);
         }
-      } catch (e) {}
+        if(!document.getElementById('myBookingsListState').classList.contains('hidden')) renderBookingsList();
+        if(!document.getElementById('detailViewWrapper').classList.contains('hidden')) {
+           const b = myBookingsData.find(x => x.bookingId === currentBookingId);
+           if(b) setupMyBookingData(b);
+        }
+      } catch (e) {
+        console.log("Silent refresh failed");
+      }
     }
 
     async function fetchData() {
       document.getElementById('loading').style.display = 'flex';
-      await fetchDataSilent();
-      if (myBookingsData.length > 0) {
-        savedName = myBookingsData[0].name; savedPhone = myBookingsData[0].phone.replace(/'/g, "");
-        document.getElementById('navBadge').classList.remove('hidden');
-        switchTab('mybooking'); 
-      } else { switchTab('home'); }
+      try {
+        const response = await fetch(`${GAS_URL}?uid=${userUid}`);
+        const data = await response.json();
+        allClassData = data.classes; 
+        let bookingsArr = (data.bookings && data.bookings.length > 0) ? data.bookings : (data.booking ? [data.booking] : []);
+        myBookingsData = bookingsArr;
+
+        if (bookingsArr.length > 0) {
+          savedName = bookingsArr[0].name;
+          savedPhone = bookingsArr[0].phone ? bookingsArr[0].phone.replace(/'/g, "") : "";
+          updateGreetingName();
+          document.getElementById('navBadge').classList.remove('hidden');
+          switchTab('mybooking'); 
+        } else {
+          savedName = ""; savedPhone = "";
+          document.getElementById('navBadge').classList.add('hidden');
+          switchTab('home'); 
+        }
+      } catch (error) {
+        alert(t('alertError'));
+      }
       document.getElementById('loading').style.display = 'none';
     }
 
     function switchTab(tab) {
-      document.getElementById('dayListView').classList.add('hidden');
-      document.getElementById('classListView').classList.add('hidden');
-      document.getElementById('bookingForm').classList.add('hidden');
-      document.getElementById('myBookingView').classList.add('hidden');
-      const h = document.getElementById('tabHome'), b = document.getElementById('tabBooking');
+      const tabHome = document.getElementById('tabHome');
+      const tabBooking = document.getElementById('tabBooking');
+      
       if (tab === 'home') {
-        h.className = "flex-1 flex flex-col items-center p-2 text-pink-600";
-        b.className = "flex-1 flex flex-col items-center p-2 text-slate-400";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors";
+        tabHome.querySelector('span').className = "text-[10px] font-bold";
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors relative";
+        tabBooking.querySelector('span').className = "text-[10px] font-medium";
+        
+        document.getElementById('myBookingView').classList.add('hidden');
+        document.getElementById('bookingForm').classList.add('hidden');
+        document.getElementById('classListView').classList.add('hidden');
         renderDayList();
-      } else {
-        b.className = "flex-1 flex flex-col items-center p-2 text-pink-600 relative";
-        h.className = "flex-1 flex flex-col items-center p-2 text-slate-400";
+      } else if (tab === 'mybooking') {
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors relative";
+        tabBooking.querySelector('span').className = "text-[10px] font-bold";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors";
+        tabHome.querySelector('span').className = "text-[10px] font-medium";
+        
+        document.getElementById('dayListView').classList.add('hidden');
+        document.getElementById('classListView').classList.add('hidden');
+        document.getElementById('bookingForm').classList.add('hidden');
         document.getElementById('myBookingView').classList.remove('hidden');
-        if(myBookingsData.length === 0) { document.getElementById('emptyBookingState').classList.remove('hidden'); }
-        else if (myBookingsData.length === 1) { setupMyBookingData(myBookingsData[0]); document.getElementById('detailViewWrapper').classList.remove('hidden'); }
-        else { renderBookingsList(); document.getElementById('myBookingsListState').classList.remove('hidden'); }
+        
+        if(!myBookingsData || myBookingsData.length === 0) {
+          document.getElementById('emptyBookingState').classList.remove('hidden');
+          document.getElementById('myBookingsListState').classList.add('hidden');
+          document.getElementById('detailViewWrapper').classList.add('hidden');
+        } else if (myBookingsData.length === 1) {
+          document.getElementById('emptyBookingState').classList.add('hidden');
+          document.getElementById('myBookingsListState').classList.add('hidden');
+          document.getElementById('detailViewWrapper').classList.remove('hidden');
+          document.getElementById('btnBackToListContainer').classList.add('hidden');
+          setupMyBookingData(myBookingsData[0]);
+        } else {
+          document.getElementById('emptyBookingState').classList.add('hidden');
+          document.getElementById('detailViewWrapper').classList.add('hidden');
+          document.getElementById('myBookingsListState').classList.remove('hidden');
+          renderBookingsList();
+        }
       }
+    }
+
+    function renderBookingsList() {
+      document.getElementById('bookingCountBadge').innerText = `${myBookingsData.length} ${t('classWord')}`;
+      let html = '';
+      myBookingsData.forEach(booking => {
+        let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") ? "bg-green-500 text-white" : "bg-yellow-100 text-yellow-700";
+        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : translateDayName(booking.date || booking.dayOfWeek);
+        let statusText = translateStatus(booking.status);
+        html += `<div onclick="showBookingDetail('${booking.bookingId}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center cursor-pointer hover:border-pink-300 transition group relative overflow-hidden"><div class="absolute left-0 top-0 w-1 h-full bg-pink-400"></div><div><h3 class="font-bold text-slate-800 text-sm">${booking.className}</h3><p class="text-xs text-slate-500 mt-1">${t('datePrefix')}${showDate} | ${booking.time}</p></div><div class="flex items-center text-right"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusColor} mr-3">${statusText}</span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-pink-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></div></div>`;
+      });
+      document.getElementById('bookingsContainer').innerHTML = html;
+    }
+
+    function showBookingDetail(bookingId) {
+      document.getElementById('myBookingsListState').classList.add('hidden');
+      document.getElementById('detailViewWrapper').classList.remove('hidden');
+      document.getElementById('btnBackToListContainer').classList.remove('hidden');
+      const booking = myBookingsData.find(b => b.bookingId === bookingId);
+      if(booking) setupMyBookingData(booking);
+    }
+
+    function showBookingsList() {
+      document.getElementById('detailViewWrapper').classList.add('hidden');
+      document.getElementById('myBookingsListState').classList.remove('hidden');
     }
 
     function renderDayList() {
       document.getElementById('dayListView').classList.remove('hidden');
-      const unique = [...new Set(allClassData.map(c => c.date))];
+      const uniqueDays = [...new Set(allClassData.map(c => c.date))];
       let html = '';
-      unique.forEach(d => {
-        const count = allClassData.filter(c => c.date === d).length;
-        html += `<div onclick="showClassesForDay('${d}')" class="bg-white py-4 px-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center text-center"><div class="w-11 h-11 bg-pink-50 rounded-full flex items-center justify-center mb-2 text-pink-600 shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div><span class="text-sm font-bold text-slate-800 break-words w-full px-1">${translateDayName(d)}</span><span class="text-xs text-slate-500 mt-1">${count} ${t('classesCount')}</span></div>`;
+      uniqueDays.forEach(day => {
+        const classCount = allClassData.filter(c => c.date === day).length;
+        html += `<div onclick="showClassesForDay('${day}')" class="min-w-0 bg-white py-4 px-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center justify-center cursor-pointer active:scale-95 hover:border-pink-400 transition-all text-center"><div class="w-11 h-11 bg-pink-50 rounded-full flex items-center justify-center mb-2 text-pink-600 shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div><span class="text-sm font-bold text-slate-800 break-words w-full px-1">${translateDayName(day)}</span><span class="text-xs text-slate-500 mt-1">${classCount} ${t('classesCount')}</span></div>`;
       });
       document.getElementById('dayContainer').innerHTML = html;
     }
 
-    function showClassesForDay(day) {
+    function showClassesForDay(selectedDayRaw) {
       document.getElementById('dayListView').classList.add('hidden');
       document.getElementById('classListView').classList.remove('hidden');
-      document.getElementById('selectedClassId').setAttribute('data-raw-day', day);
-      document.getElementById('selectedDayTitle').innerText = translateDayName(day);
-      renderClassesOnly(day);
+      document.getElementById('selectedClassId').setAttribute('data-raw-day', selectedDayRaw);
+      document.getElementById('selectedDayTitle').innerText = translateDayName(selectedDayRaw);
+      renderClassesOnly(selectedDayRaw);
     }
 
-    function renderClassesOnly(day) {
-      const filtered = allClassData.filter(c => c.date === day);
+    // [แยกออกมาเพื่อให้ใช้ซ้ำตอน Silent Refresh ได้]
+    function renderClassesOnly(selectedDayRaw) {
+      const filteredClasses = allClassData.filter(c => c.date === selectedDayRaw);
       let html = '';
-      filtered.forEach(c => {
+      filteredClasses.forEach(c => {
         const isFull = parseInt(c.remaining) <= 0;
-        const bCls = isFull ? 'bg-red-500' : 'bg-green-500';
-        const bTxt = isFull ? t('badgeFull') : `${t('badgeAvailable')} ${c.remaining} ${t('badgeSeat')}`;
-        html += `<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><h2 class="text-lg font-bold">${c.className}</h2><p class="text-sm text-slate-500 flex items-center mt-1.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>${c.time}</p><div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 gap-3"><span class="text-xs font-bold text-white ${bCls} px-3 py-2.5 rounded-xl text-center whitespace-nowrap">${bTxt}</span><button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} class="flex-1 flex justify-center items-center py-2.5 rounded-xl text-sm font-medium ${isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-sm'}">${isFull ? t('btnFull') : t('btnBook')}</button></div></div>`;
+        const badgeClass = isFull ? 'text-white bg-red-500' : 'text-white bg-green-500';
+        const badgeText = isFull ? t('badgeFull') : `${t('badgeAvailable')} ${c.remaining} ${t('badgeSeat')}`;
+        const btnText = isFull ? t('btnFull') : t('btnBook');
+        const btnStyle = isFull ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white shadow-sm';
+        html += `<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><h2 class="text-lg font-bold text-slate-800">${c.className}</h2><p class="text-sm text-slate-500 mt-1.5 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>${c.time}</p><div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-50 gap-3"><span class="text-xs font-bold ${badgeClass} px-3 py-2.5 rounded-xl shadow-sm whitespace-nowrap text-center">${badgeText}</span><button onclick="openForm('${c.classId}', '${c.className}', '${c.date}', '${c.time}')" ${isFull ? 'disabled' : ''} class="flex-1 flex justify-center items-center ${btnStyle} py-2.5 rounded-xl text-sm font-medium transition">${btnText}</button></div></div>`;
       });
       document.getElementById('classContainer').innerHTML = html;
+    }
+
+    function backToDayList() {
+      document.getElementById('classListView').classList.add('hidden');
+      document.getElementById('dayListView').classList.remove('hidden');
+    }
+
+    function closeForm() {
+      document.getElementById('bookingForm').classList.add('hidden');
+      document.getElementById('consentCheck').checked = false;
+      document.getElementById('classListView').classList.remove('hidden');
+    }
+
+    function formatThaiDate(dateStr) {
+      if(!dateStr || !dateStr.includes('-')) return dateStr;
+      const parts = dateStr.split('-'); 
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
     function setupMyBookingData(booking) {
@@ -460,34 +597,6 @@
         if (c.classId === booking.classId) option.selected = true; 
         scheduleSelect.appendChild(option);
       });
-
-      // ==========================================
-      // [ส่วนที่เพิ่มใหม่] รีเซ็ตกล่องอัปโหลดสลิป
-      // ==========================================
-      const fileInput = document.getElementById('slipFileInput');
-      const fileNameDisplay = document.getElementById('fileNameDisplay');
-      const btnSubmit = document.getElementById('btnSubmitSlip');
-      const statusText = document.getElementById('uploadStatus');
-
-      if (fileInput) {
-        fileInput.value = '';
-        fileInput.parentElement.classList.remove("hidden");
-      }
-      if (fileNameDisplay) {
-        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
-        fileNameDisplay.classList.remove("text-green-600");
-        fileNameDisplay.classList.add("text-pink-600");
-      }
-      if (btnSubmit) {
-        btnSubmit.classList.add("hidden");
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = t('btnSubmitSlipText');
-      }
-      if (statusText) {
-        statusText.classList.add("hidden");
-        statusText.innerText = "";
-      }
-      // ==========================================
 
       const statusBadge = document.getElementById('bookingStatus');
       const paymentSection = document.getElementById('paymentSection');
@@ -516,104 +625,158 @@
       document.getElementById('editForm').classList.add('hidden'); 
     }
 
-    function renderBookingsList() {
-      document.getElementById('bookingCountBadge').innerText = `${myBookingsData.length} ${t('classWord')}`;
-      let html = '';
-      myBookingsData.forEach(booking => {
-        let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") ? "bg-green-500 text-white" : "bg-yellow-100 text-yellow-700";
-        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : translateDayName(booking.date || booking.dayOfWeek);
-        let statusText = translateStatus(booking.status);
-        html += `<div onclick="showBookingDetail('${booking.bookingId}')" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center cursor-pointer hover:border-pink-300 transition group relative overflow-hidden"><div class="absolute left-0 top-0 w-1 h-full bg-pink-400"></div><div><h3 class="font-bold text-slate-800 text-sm">${booking.className}</h3><p class="text-xs text-slate-500 mt-1">${t('datePrefix')}${showDate} | ${booking.time}</p></div><div class="flex items-center text-right"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${statusColor} mr-3">${statusText}</span><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-pink-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></div></div>`;
-      });
-      document.getElementById('bookingsContainer').innerHTML = html;
+    function openForm(classId, className, date, time) {
+      document.getElementById('selectedClassId').value = classId;
+      document.getElementById('selectedClassId').setAttribute('data-raw-day', date);
+      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${translateDayName(date)} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
+      document.getElementById('name').value = savedName;
+      document.getElementById('phone').value = savedPhone;
+      document.getElementById('bookingDate').value = '';
+      document.getElementById('consentCheck').checked = false;
+      document.getElementById('classListView').classList.add('hidden');
+      document.getElementById('bookingForm').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function showBookingDetail(bookingId) {
-      document.getElementById('myBookingsListState').classList.add('hidden');
-      document.getElementById('detailViewWrapper').classList.remove('hidden');
-      document.getElementById('btnBackToListContainer').classList.remove('hidden');
-      const booking = myBookingsData.find(b => b.bookingId === bookingId);
-      if(booking) setupMyBookingData(booking);
+    function showToast(message) {
+      const toast = document.getElementById('toastMessage');
+      toast.querySelector('span').innerText = message;
+      toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+      }, 3000);
     }
-
-    function showBookingsList() {
-      document.getElementById('detailViewWrapper').classList.add('hidden');
-      document.getElementById('myBookingsListState').classList.remove('hidden');
-    }
-
-    function backToDayList() { document.getElementById('classListView').classList.add('hidden'); document.getElementById('dayListView').classList.remove('hidden'); }
-    function closeForm() { document.getElementById('bookingForm').classList.add('hidden'); document.getElementById('classListView').classList.remove('hidden'); }
-    function formatThaiDate(d) { if(!d || !d.includes('-')) return d; const p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; }
-    function toggleEdit() { document.getElementById('editForm').classList.toggle('hidden'); }
 
     async function submitNewBooking() {
-      const cb = document.getElementById('consentCheck'), n = document.getElementById('name').value, ph = document.getElementById('phone').value, dt = document.getElementById('bookingDate').value, id = document.getElementById('selectedClassId').value;
-      if(cb.checked) {
-        if(!n || !ph || !dt) { alert(t('alertIncomplete')); cb.checked = false; return; }
-        const sel = allClassData.find(c => c.classId === id);
-        if (sel) {
-          const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"], daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-          const d = new Date(dt.split('-')[0], dt.split('-')[1] - 1, dt.split('-')[2]);
-          const clsDay = sel.date.replace('วัน', '').trim().toUpperCase();
-          if (!clsDay.includes(daysThai[d.getDay()]) && !daysThai[d.getDay()].includes(clsDay) && !clsDay.includes(daysEng[d.getDay()]) && !daysEng[d.getDay()].includes(clsDay)) {
-            alert(`${t('alertDateMismatchPrefix')}${translateDayName(sel.date)}${t('alertDateMismatchSuffix')}`); cb.checked = false; return;
+      const checkbox = document.getElementById('consentCheck');
+      const name = document.getElementById('name').value;
+      const phone = document.getElementById('phone').value;
+      const bookingDate = document.getElementById('bookingDate').value;
+      const classId = document.getElementById('selectedClassId').value;
+      
+      if(checkbox.checked) {
+        if(!name || !phone || !bookingDate) { alert(t('alertIncomplete')); checkbox.checked = false; return; }
+        const selectedClass = allClassData.find(c => c.classId === classId);
+        if (selectedClass) {
+          const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+          const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+          const d = new Date(bookingDate.split('-')[0], bookingDate.split('-')[1] - 1, bookingDate.split('-')[2]);
+          const dayNameThai = daysThai[d.getDay()]; const dayNameEng = daysEng[d.getDay()];
+          const classDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
+          if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) && !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
+            alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`); checkbox.checked = false; return;
           }
-          if (myBookingsData.some(b => b.className === sel.className && b.time === sel.time && b.bookingDate === dt)) { alert(t('alertDuplicate')); cb.checked = false; return; }
+          if (myBookingsData.some(b => b.className === selectedClass.className && b.time === selectedClass.time && b.bookingDate === bookingDate)) {
+            alert(t('alertDuplicate')); checkbox.checked = false; return;
+          }
         }
         document.getElementById('loading').style.display = 'flex';
-        await sendData({ action: "book", uid: userUid, name: n, phone: ph, bookingDate: dt, classId: id });
+        await sendData({ action: "book", uid: userUid, name: name, phone: phone, bookingDate: bookingDate, classId: classId });
       }
     }
 
     async function saveEdit() {
-      const n = document.getElementById('editName').value, ph = document.getElementById('editPhone').value, id = document.getElementById('editClassSchedule').value, dt = document.getElementById('editBookingDate').value;
-      if(!n || !ph || !dt) return alert(t('alertIncomplete'));
-      const sel = allClassData.find(c => c.classId === id);
-      if (sel) {
-        const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"], daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        const d = new Date(dt.split('-')[0], dt.split('-')[1] - 1, dt.split('-')[2]);
-        const clsDay = sel.date.replace('วัน', '').trim().toUpperCase();
-        if (!clsDay.includes(daysThai[d.getDay()]) && !daysThai[d.getDay()].includes(clsDay) && !clsDay.includes(daysEng[d.getDay()]) && !daysEng[d.getDay()].includes(clsDay)) { alert(`${t('alertDateMismatchPrefix')}${translateDayName(sel.date)}${t('alertDateMismatchSuffix')}`); return; }
-        if (myBookingsData.some(b => b.bookingId !== currentBookingId && b.className === sel.className && b.time === sel.time && b.bookingDate === dt)) { return alert(t('alertDuplicate')); }
+      const name = document.getElementById('editName').value; const phone = document.getElementById('editPhone').value;
+      const classId = document.getElementById('editClassSchedule').value; const bookingDate = document.getElementById('editBookingDate').value;
+      if(!name || !phone || !bookingDate) return alert(t('alertIncomplete'));
+      const selectedClass = allClassData.find(c => c.classId === classId);
+      if (selectedClass) {
+        const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
+        const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+        const d = new Date(bookingDate.split('-')[0], bookingDate.split('-')[1] - 1, bookingDate.split('-')[2]);
+        const clsDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
+        if (!clsDayStr.includes(daysThai[d.getDay()]) && !daysThai[d.getDay()].includes(clsDayStr) && !clsDayStr.includes(daysEng[d.getDay()]) && !daysEng[d.getDay()].includes(clsDayStr)) {
+          alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
+          return;
+        }
+        if (myBookingsData.some(b => b.bookingId !== currentBookingId && b.className === selectedClass.className && b.time === selectedClass.time && b.bookingDate === bookingDate)) {
+          return alert(t('alertDuplicate'));
+        }
       }
       document.getElementById('loading').style.display = 'flex';
-      try { await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name:n, phone:ph, classId:id, bookingDate:dt }) }); await fetchData(); showToast(t('saveSuccess')); } 
-      catch (e) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
+      try {
+        await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) });
+        await fetchData(); showToast(t('saveSuccess'));
+      } catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
     }
 
-    async function cancelBooking() { if(confirm(t('alertCancelConfirm'))) { document.getElementById('loading').style.display = 'flex'; await sendData({ action: "cancel", bookingId: currentBookingId }); } }
-    async function sendData(payload) { try { await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) }); fetchData(); } catch (e) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; } }
-    function openForm(id, name, date, time) { document.getElementById('selectedClassId').value = id; document.getElementById('selectedClassId').setAttribute('data-raw-day', date); document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${translateDayName(date)} | ${time}</span><b class="text-base text-pink-700">${name}</b>`; document.getElementById('name').value = savedName; document.getElementById('phone').value = savedPhone; document.getElementById('bookingDate').value = ''; document.getElementById('consentCheck').checked = false; document.getElementById('classListView').classList.add('hidden'); document.getElementById('bookingForm').classList.remove('hidden'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    function showToast(m) { const t = document.getElementById('toastMessage'); t.querySelector('span').innerText = m; t.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none'); t.classList.add('opacity-100', 'translate-y-0'); setTimeout(() => { t.classList.replace('opacity-100', 'opacity-0'); t.classList.replace('translate-y-0', 'translate-y-[-20px]'); t.classList.add('pointer-events-none'); }, 3000); }
-    function previewFile() { const i = document.getElementById('slipFileInput'), d = document.getElementById('fileNameDisplay'), b = document.getElementById('btnSubmitSlip'); if (i.files && i.files[0]) { d.innerHTML = `<span class="truncate w-full block">✅ <span data-i18n="fileSelectedPrefix">${t('fileSelectedPrefix')}</span> ${i.files[0].name}</span>`; d.classList.replace("text-pink-600", "text-green-600"); b.classList.remove("hidden"); } else { d.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`; d.classList.replace("text-green-600", "text-pink-600"); b.classList.add("hidden"); } }
+    async function cancelBooking() {
+      if(confirm(t('alertCancelConfirm'))) {
+        document.getElementById('loading').style.display = 'flex';
+        await sendData({ action: "cancel", bookingId: currentBookingId });
+      }
+    }
 
-    const compressImage = (f) => {
-      return new Promise((res, rej) => {
-        const r = new FileReader(); r.readAsDataURL(f);
-        r.onload = (e) => {
-          const img = new Image(); img.src = e.target.result;
+    async function sendData(payload) {
+      try { await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) }); fetchData(); } 
+      catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
+    }
+
+    function previewFile() {
+      const fileInput = document.getElementById('slipFileInput');
+      const fileNameDisplay = document.getElementById('fileNameDisplay');
+      const btnSubmit = document.getElementById('btnSubmitSlip');
+
+      if (fileInput.files && fileInput.files[0]) {
+        fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ <span data-i18n="fileSelectedPrefix">${t('fileSelectedPrefix')}</span> ${fileInput.files[0].name}</span>`;
+        fileNameDisplay.classList.replace("text-pink-600", "text-green-600");
+        btnSubmit.classList.remove("hidden");
+      } else {
+        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
+        fileNameDisplay.classList.replace("text-green-600", "text-pink-600");
+        btnSubmit.classList.add("hidden");
+      }
+    }
+
+    const compressImage = (imageFile) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(imageFile);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
           img.onload = () => {
-            const canvas = document.createElement('canvas'); const MAX = 800; let w = img.width, h = img.height;
-            if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-            canvas.width = w; canvas.height = h;
-            const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-            res(canvas.toDataURL('image/jpeg', 0.6));
+            try {
+              const canvas = document.createElement('canvas');
+              const MAX_DIMENSION = 800; 
+              let width = img.width, height = img.height;
+              if (width > height) { if (width > MAX_DIMENSION) { height *= MAX_DIMENSION / width; width = MAX_DIMENSION; } } 
+              else { if (height > MAX_DIMENSION) { width *= MAX_DIMENSION / height; height = MAX_DIMENSION; } }
+              canvas.width = width; canvas.height = height;
+              const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', 0.6));
+            } catch (err) { reject(new Error("Compression failed")); }
           };
         };
       });
     };
 
     async function submitSlip() {
-      const i = document.getElementById('slipFileInput'), b = document.getElementById('btnSubmitSlip'), s = document.getElementById('uploadStatus'), n = document.getElementById('bName').innerText; 
-      if (!i.files || i.files.length === 0) return alert(t('alertNoSlip'));
-      b.disabled = true; b.innerText = t('uploadingText'); s.innerText = t('uploadWarning'); s.className = "text-xs text-center mt-2 text-yellow-600 font-medium block"; s.classList.remove('hidden');
+      const fileInput = document.getElementById('slipFileInput');
+      const btnSubmit = document.getElementById('btnSubmitSlip');
+      const statusText = document.getElementById('uploadStatus');
+      const customerName = document.getElementById('bName').innerText; 
+
+      if (!fileInput.files || fileInput.files.length === 0) { alert(t('alertNoSlip')); return; }
+      btnSubmit.disabled = true; btnSubmit.innerText = t('uploadingText');
+      statusText.innerText = t('uploadWarning'); statusText.className = "text-xs text-center mt-2 text-yellow-600 font-medium block"; statusText.classList.remove('hidden');
+
       try {
-        const base64 = await compressImage(i.files[0]);
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "uploadSlip", bookingId: currentBookingId, customerName: n, base64Data: base64, mimeType: "image/jpeg", fileName: currentBookingId + "_slip.jpg" }) });
-        const r = await res.json();
-        if (r.success) { s.innerText = t('uploadSuccess'); s.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg"; b.innerText = t('btnUploadDone'); i.parentElement.classList.add("hidden"); document.getElementById('paymentSection').classList.add('hidden'); fetchData(); } 
-        else throw new Error(r.message);
-      } catch (err) { s.innerText = t('uploadErrorPrefix') + err.message; s.className = "text-xs text-center mt-2 text-red-600 block"; b.disabled = false; b.innerText = t('btnTryAgain'); }
+        const base64Data = await compressImage(fileInput.files[0]);
+        const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "uploadSlip", bookingId: currentBookingId, customerName: customerName, base64Data: base64Data, mimeType: "image/jpeg", fileName: currentBookingId + "_slip.jpg" }) });
+        const result = await response.json();
+        if (result.success) {
+          statusText.innerText = t('uploadSuccess');
+          statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
+          btnSubmit.innerText = t('btnUploadDone'); fetchData();
+        } else throw new Error(result.message);
+      } catch (error) {
+        statusText.innerText = t('uploadErrorPrefix') + error.message;
+        statusText.className = "text-xs text-center mt-2 text-red-600 block";
+        btnSubmit.disabled = false; btnSubmit.innerText = t('btnTryAgain');
+      }
     }
 
     main();
