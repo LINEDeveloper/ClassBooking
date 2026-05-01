@@ -216,17 +216,17 @@
           </p>
 
           <div class="mt-5 border-t border-slate-100 pt-4 text-left">
-            <p class="text-sm font-bold text-slate-700 mb-2">ยืนยันการชำระเงิน</p>
+            <p class="text-sm font-bold text-slate-700 mb-2" data-i18n="confirmPaymentTitle">ยืนยันการชำระเงิน</p>
             
             <label class="block w-full border-2 border-dashed border-pink-200 rounded-xl p-4 text-center cursor-pointer hover:bg-pink-50 transition duration-200">
               <span class="text-sm text-pink-600 font-medium flex items-center justify-center gap-2" id="fileNameDisplay">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                อัปโหลดรูปสลิป
+                <span data-i18n="uploadSlipText">อัปโหลดรูปสลิป</span>
               </span>
               <input type="file" id="slipFileInput" accept="image/*" class="hidden" onchange="previewFile()">
             </label>
 
-            <button id="btnSubmitSlip" onclick="submitSlip()" class="mt-3 w-full bg-slate-800 text-white text-sm font-bold py-3 rounded-xl shadow-sm hover:bg-slate-700 transition duration-200 disabled:opacity-50 hidden active:scale-95">
+            <button id="btnSubmitSlip" onclick="submitSlip()" class="mt-3 w-full bg-slate-800 text-white text-sm font-bold py-3 rounded-xl shadow-sm hover:bg-slate-700 transition duration-200 disabled:opacity-50 hidden active:scale-95" data-i18n="btnSubmitSlipText">
               ส่งข้อมูลยืนยัน
             </button>
             <p id="uploadStatus" class="text-xs text-center mt-2 hidden"></p>
@@ -281,7 +281,12 @@
         bankName: "ธนาคารไทยพาณิชย์ (SCB)", accName: "ชื่อบัญชี: คุณอนนท์ ศรีวาจา", saveQrHint: "สามารถกดค้างที่รูปเพื่อบันทึก QR Code",
         alertIncomplete: "กรุณากรอกข้อมูลให้ครบถ้วนครับ", alertDateMismatchPrefix: "วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน",
         alertDateMismatchSuffix: ") กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ", alertDuplicate: "คุณมีคลาสเรียนเวลาดังกล่าวแล้ว",
-        alertCancelConfirm: "คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?", alertError: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
+        alertCancelConfirm: "คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?", alertError: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+        statusUnderReview: "รอตรวจสอบ", confirmPaymentTitle: "ยืนยันการชำระเงิน", uploadSlipText: "อัปโหลดรูปสลิป", 
+        btnSubmitSlipText: "ส่งข้อมูลยืนยัน", fileSelectedPrefix: "เลือกรูปแล้ว:", alertNoSlip: "กรุณาเลือกรูปสลิปก่อนครับ",
+        uploadingText: "กำลังอัปโหลด...", uploadWarning: "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ",
+        uploadSuccess: "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'", btnUploadDone: "ส่งสลิปเรียบร้อย",
+        uploadErrorPrefix: "❌ เกิดข้อผิดพลาด: ", btnTryAgain: "ลองใหม่อีกครั้ง"
       },
       en: {
         loadingData: "Loading data...", helloPrefix: "Hello, ", selectDateTitle: "Select Day to Study", classesCount: "Classes",
@@ -299,7 +304,12 @@
         bankName: "Siam Commercial Bank (SCB)", accName: "Account Name: Anon Sriwaja", saveQrHint: "Long press the image to save QR Code",
         alertIncomplete: "Please fill in all required fields.", alertDateMismatchPrefix: "The selected date does not match the class schedule (This class is on ",
         alertDateMismatchSuffix: "). Please select the correct date.", alertDuplicate: "You already have a booking for this time slot.",
-        alertCancelConfirm: "Are you sure you want to cancel this booking?", alertError: "An error occurred. Please try again."
+        alertCancelConfirm: "Are you sure you want to cancel this booking?", alertError: "An error occurred. Please try again.",
+        statusUnderReview: "Under Review", confirmPaymentTitle: "Confirm Payment", uploadSlipText: "Upload Slip", 
+        btnSubmitSlipText: "Submit Payment", fileSelectedPrefix: "File selected:", alertNoSlip: "Please select a slip image first.",
+        uploadingText: "Uploading...", uploadWarning: "Sending data... Please do not close the screen.",
+        uploadSuccess: "✅ Upload successful! Status is 'Under Review'", btnUploadDone: "Slip Submitted",
+        uploadErrorPrefix: "❌ Error: ", btnTryAgain: "Try Again"
       }
     };
 
@@ -357,6 +367,7 @@
       if(statusTh === 'รอชำระเงิน') return t('statusPending');
       if(statusTh === 'ชำระเงินแล้ว') return t('statusPaid');
       if(statusTh === 'จองสำเร็จ') return t('statusSuccess');
+      if(statusTh === 'รอตรวจสอบ') return t('statusUnderReview');
       return statusTh;
     }
 
@@ -619,25 +630,18 @@
     function toggleEdit() { document.getElementById('editForm').classList.toggle('hidden'); }
 
     async function saveEdit() {
-      const name = document.getElementById('editName').value;
-      const phone = document.getElementById('editPhone').value;
-      const classId = document.getElementById('editClassSchedule').value;
-      const bookingDate = document.getElementById('editBookingDate').value;
-
+      const name = document.getElementById('editName').value; const phone = document.getElementById('editPhone').value;
+      const classId = document.getElementById('editClassSchedule').value; const bookingDate = document.getElementById('editBookingDate').value;
       if(!name || !phone || !bookingDate) return alert(t('alertIncomplete'));
-
       const selectedClass = allClassData.find(c => c.classId === classId);
       if (selectedClass) {
-        // [แก้บั๊ก] เพิ่มการเทียบวันที่ให้ครอบคลุมทั้งภาษาไทยและอังกฤษ
         const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
         const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        
         const dateParts = bookingDate.split('-');
         const d = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
         const dayIndex = d.getDay();
         const dayNameThai = daysThai[dayIndex];
         const dayNameEng = daysEng[dayIndex];
-        
         const classDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
         
         if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
@@ -646,33 +650,15 @@
           return;
         }
 
-        const isDuplicate = myBookingsData.some(b => 
-          b.bookingId !== currentBookingId && 
-          b.className === selectedClass.className && 
-          b.time === selectedClass.time && 
-          b.bookingDate === bookingDate
-        );
-
-        if (isDuplicate) {
-          alert(t('alertDuplicate'));
-          return;
+        if (myBookingsData.some(b => b.bookingId !== currentBookingId && b.className === selectedClass.className && b.time === selectedClass.time && b.bookingDate === bookingDate)) {
+          return alert(t('alertDuplicate'));
         }
       }
-      
       document.getElementById('loading').style.display = 'flex';
       try {
-        await fetch(GAS_URL, { 
-          method: "POST", 
-          body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) 
-        });
-        
-        await fetchData(); 
-        showToast(t('saveSuccess'));
-        
-      } catch (error) {
-        alert(t('alertError'));
-        document.getElementById('loading').style.display = 'none';
-      }
+        await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) });
+        await fetchData(); showToast(t('saveSuccess'));
+      } catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
     }
 
     async function cancelBooking() {
@@ -696,11 +682,11 @@
       const btnSubmit = document.getElementById('btnSubmitSlip');
 
       if (fileInput.files && fileInput.files[0]) {
-        fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ เลือกรูปแล้ว: ${fileInput.files[0].name}</span>`;
+        fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ <span data-i18n="fileSelectedPrefix">${t('fileSelectedPrefix')}</span> ${fileInput.files[0].name}</span>`;
         fileNameDisplay.classList.replace("text-pink-600", "text-green-600");
         btnSubmit.classList.remove("hidden");
       } else {
-        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> อัปโหลดรูปสลิป`;
+        fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
         fileNameDisplay.classList.replace("text-green-600", "text-pink-600");
         btnSubmit.classList.add("hidden");
       }
@@ -717,12 +703,10 @@
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              // กำหนดขนาดสูงสุดที่ปลอดภัยต่อมือถือ
               const MAX_DIMENSION = 800; 
               let width = img.width;
               let height = img.height;
 
-              // คำนวณอัตราส่วนให้พอดี ไม่ให้รูปเพี้ยน
               if (width > height) {
                 if (width > MAX_DIMENSION) {
                   height *= MAX_DIMENSION / width;
@@ -741,7 +725,6 @@
               const ctx = canvas.getContext('2d');
               ctx.drawImage(img, 0, 0, width, height);
               
-              // แปลงเป็น JPEG แบบบีบอัดคุณภาพเหลือ 60%
               const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
               resolve(compressedBase64);
             } catch (err) {
@@ -761,19 +744,18 @@
       const customerName = document.getElementById('bName').innerText; 
 
       if (!fileInput.files || fileInput.files.length === 0) {
-        alert("กรุณาเลือกรูปสลิปก่อนครับ");
+        alert(t('alertNoSlip'));
         return;
       }
 
       const file = fileInput.files[0];
 
       btnSubmit.disabled = true;
-      btnSubmit.innerText = "กำลังอัปโหลด...";
-      statusText.innerText = "กำลังส่งข้อมูล... ห้ามปิดหน้าจอนะครับ";
+      btnSubmit.innerText = t('uploadingText');
+      statusText.innerText = t('uploadWarning');
       statusText.className = "text-xs text-center mt-2 text-yellow-600 font-medium block";
 
       try {
-        // ทำการบีบอัดรูปก่อนส่ง
         const compressedBase64Data = await compressImage(file);
         
         const payload = {
@@ -793,9 +775,9 @@
         const result = await response.json();
 
         if (result.success) {
-          statusText.innerText = "✅ อัปโหลดสำเร็จ! สถานะเปลี่ยนเป็น 'รอตรวจสอบ'";
+          statusText.innerText = t('uploadSuccess');
           statusText.className = "text-sm text-center mt-3 text-green-600 font-bold block bg-green-50 py-2 rounded-lg";
-          btnSubmit.innerText = "ส่งสลิปเรียบร้อย";
+          btnSubmit.innerText = t('btnUploadDone');
           fileInput.parentElement.classList.add("hidden");
           document.getElementById('paymentSection').classList.add('hidden');
           fetchData();
@@ -803,10 +785,10 @@
           throw new Error(result.message);
         }
       } catch (error) {
-        statusText.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
+        statusText.innerText = t('uploadErrorPrefix') + error.message;
         statusText.className = "text-xs text-center mt-2 text-red-600 block";
         btnSubmit.disabled = false;
-        btnSubmit.innerText = "ลองใหม่อีกครั้ง";
+        btnSubmit.innerText = t('btnTryAgain');
       }
     }
 
