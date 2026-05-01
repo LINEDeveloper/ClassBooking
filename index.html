@@ -240,7 +240,7 @@
           <div class="flex items-center justify-between border-t border-slate-100 pt-4 mt-2">
             <div>
               <p class="text-xs text-slate-500 mb-1" data-i18n="showStatusTitle">สถานะการทำรายการ</p>
-              <span id="bookingStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 inline-block"></span>
+              <span id="bookingStatus" class="px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block"></span>
             </div>
             <button id="btnCancel" onclick="cancelBooking()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition" data-i18n="btnCancelBooking">
               ยกเลิกการจอง
@@ -598,7 +598,7 @@
       
       myBookingsData.forEach(booking => {
         let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") 
-                        ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
+                        ? "bg-green-500 text-white" : "bg-yellow-100 text-yellow-700";
         
         let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : translateDayName(booking.date || booking.dayOfWeek);
         let statusText = translateStatus(booking.status);
@@ -611,7 +611,7 @@
               <p class="text-xs text-slate-500 mt-1">${t('datePrefix')}${showDate} | ${booking.time}</p>
             </div>
             <div class="flex items-center text-right">
-              <span class="px-2 py-1 rounded-md text-[10px] font-bold ${statusColor} mr-3">${statusText}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-bold ${statusColor} mr-3">${statusText}</span>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-hover:text-pink-500 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
             </div>
           </div>
@@ -739,11 +739,11 @@
       statusBadge.innerText = translateStatus(booking.status);
 
       if(booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") {
-        statusBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 inline-block";
+        statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-green-500 text-white inline-block";
         document.getElementById('btnEdit').classList.add('hidden');
         document.getElementById('btnCancel').classList.add('hidden');
       } else {
-        statusBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 inline-block";
+        statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block";
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
       }
