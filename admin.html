@@ -11,108 +11,85 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    
-    /* Animation สำหรับ Modal */
     .modal-enter { opacity: 1 !important; visibility: visible !important; }
     .modal-content-enter { transform: scale(1) !important; }
   </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
 
-  <!-- ========================================== -->
   <!-- 1. หน้า LOGIN -->
-  <!-- ========================================== -->
   <div id="loginView" class="fixed inset-0 bg-slate-50 z-50 flex items-center justify-center transition-opacity duration-300">
     <div class="bg-white p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 w-full max-w-sm">
       <div class="text-center mb-8">
         <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         </div>
         <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-red-500 text-transparent bg-clip-text">Yoka Admin</h1>
         <p class="text-sm text-slate-400 mt-1">ระบบจัดการหลังบ้าน</p>
       </div>
-      
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase tracking-wide">Username</label>
-          <input type="text" id="username" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition outline-none" placeholder="admin">
+          <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase">Username</label>
+          <input type="text" id="username" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none" placeholder="admin">
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase tracking-wide">Password</label>
-          <input type="password" id="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-2 focus:ring-pink-100 transition outline-none" placeholder="••••••••">
+          <label class="block text-xs font-bold text-slate-500 mb-1 ml-1 uppercase">Password</label>
+          <input type="password" id="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none" placeholder="••••••••">
         </div>
-        <button onclick="login()" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-pink-500/30 hover:opacity-90 transition mt-2 active:scale-95">
+        <button onclick="login()" id="btnLogin" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold py-3.5 rounded-xl shadow-md hover:opacity-90 transition mt-2 active:scale-95">
           เข้าสู่ระบบ
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ========================================== -->
   <!-- 2. หน้า MAIN DASHBOARD -->
-  <!-- ========================================== -->
   <div id="dashboardView" class="hidden flex flex-col h-full opacity-0 transition-opacity duration-300">
-    
-    <!-- Navbar -->
     <nav class="bg-white px-6 py-4 flex justify-between items-center shrink-0 border-b border-slate-100">
       <div class="flex items-center space-x-3">
         <div class="w-8 h-8 bg-gradient-to-r from-pink-500 to-red-500 rounded-lg flex items-center justify-center text-white font-bold">Y</div>
         <span class="font-bold text-lg text-slate-800 tracking-tight">Yoka Dashboard</span>
       </div>
       <button onclick="logout()" class="text-sm font-medium text-slate-500 hover:text-red-500 flex items-center transition">
-        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-        ออกจากระบบ
+        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg> ออกจากระบบ
       </button>
     </nav>
 
-    <!-- เมนู Tabs -->
     <div class="bg-white px-6 border-b border-slate-200 flex space-x-6 shrink-0 shadow-sm">
-      <button id="tabBooking" onclick="switchTab('booking')" class="py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition">
-        รายการจองลูกค้า
-      </button>
-      <button id="tabClass" onclick="switchTab('class')" class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition">
-        จัดการคลาสเรียน
-      </button>
+      <button id="tabBooking" onclick="switchTab('booking')" class="py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition">รายการจองลูกค้า</button>
+      <button id="tabClass" onclick="switchTab('class')" class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition">จัดการคลาสเรียน</button>
     </div>
 
-    <!-- Content Area -->
     <div class="flex-1 overflow-auto p-6 md:p-8 relative bg-slate-50/50">
       
-      <!-- ========================================== -->
-      <!-- VIEW 1: หน้าจัดการรายการจอง -->
-      <!-- ========================================== -->
+      <!-- VIEW 1: รายการจอง -->
       <div id="viewBooking" class="max-w-[1400px] mx-auto transition-opacity duration-300">
-        
-        <!-- Stats Cards -->
+        <!-- Stats -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
-            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสลิป</p><p class="text-2xl font-bold text-slate-800">3</p></div>
+            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">รอตรวจสลิป</p><p class="text-2xl font-bold text-slate-800" id="statWaitSlip">0</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
-            <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">รอชำระเงิน</p><p class="text-2xl font-bold text-slate-800">12</p></div>
+            <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">รอชำระเงิน</p><p class="text-2xl font-bold text-slate-800" id="statWaitPay">0</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
-            <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">จองสำเร็จ (เดือนนี้)</p><p class="text-2xl font-bold text-slate-800">45</p></div>
+            <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">จองสำเร็จทั้งหมด</p><p class="text-2xl font-bold text-slate-800" id="statSuccess">0</p></div>
           </div>
           <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center">
-            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
-            <div><p class="text-sm text-slate-500 font-medium">เช็คอินวันนี้</p><p class="text-2xl font-bold text-slate-800">8</p></div>
+            <div class="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-4"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>
+            <div><p class="text-sm text-slate-500 font-medium">เช็คอินแล้ว</p><p class="text-2xl font-bold text-slate-800" id="statCheckIn">0</p></div>
           </div>
         </div>
 
-        <!-- Table Section: Booking -->
+        <!-- Table -->
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-white gap-4">
             <h2 class="font-bold text-lg text-slate-800">รายการจองทั้งหมด</h2>
-            <div class="flex space-x-2 w-full md:w-auto">
-              <input type="text" placeholder="ค้นหาชื่อ, รหัสจอง..." class="w-full md:w-64 px-4 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400 bg-slate-50">
-              <button class="bg-white border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition shrink-0">รีเฟรช</button>
-            </div>
+            <button onclick="fetchBookings()" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">🔄 รีเฟรชข้อมูล</button>
           </div>
-          
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse min-w-[900px]">
               <thead>
@@ -120,67 +97,34 @@
                   <th class="p-4 font-semibold">รหัสจอง</th>
                   <th class="p-4 font-semibold">ลูกค้า</th>
                   <th class="p-4 font-semibold">คลาสเรียน</th>
-                  <th class="p-4 font-semibold">วัน/เวลาเรียน</th>
+                  <th class="p-4 font-semibold">วันที่เรียน</th>
                   <th class="p-4 font-semibold text-center">สถานะการชำระ</th>
                   <th class="p-4 font-semibold text-center">เข้าเรียน</th>
                   <th class="p-4 font-semibold text-center">จัดการ</th>
                 </tr>
               </thead>
-              <tbody class="text-sm text-slate-700">
-                <!-- แถวตัวอย่าง -->
-                <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition group">
-                  <td class="p-4 font-mono text-slate-500">BK17140001</td>
-                  <td class="p-4"><p class="font-bold text-slate-800">คุณใจดี รักเรียน</p><p class="text-xs text-slate-400">0812345678</p></td>
-                  <td class="p-4 text-pink-600 font-medium">Yoga Basic</td>
-                  <td class="p-4"><p>05/05/2026</p><p class="text-xs text-slate-400">10:00 - 11:30</p></td>
-                  <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600">รอตรวจสอบ</span></td>
-                  <td class="p-4 text-center"><span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span></td>
-                  <td class="p-4 text-center">
-                    <button onclick="openSlipModal('BK17140001', 'คุณใจดี รักเรียน', 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=300&auto=format&fit=crop')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">ตรวจสลิป</button>
-                  </td>
-                </tr>
-                <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition group">
-                  <td class="p-4 font-mono text-slate-500">BK17140003</td>
-                  <td class="p-4"><p class="font-bold text-slate-800">คุณอนนท์ ศรีวาจา</p><p class="text-xs text-slate-400">0801112222</p></td>
-                  <td class="p-4 text-pink-600 font-medium">Yoga Basic</td>
-                  <td class="p-4"><p>05/05/2026</p><p class="text-xs text-slate-400">10:00 - 11:30</p></td>
-                  <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">จองสำเร็จ</span></td>
-                  <td class="p-4 text-center">
-                    <div class="flex flex-col items-center justify-center">
-                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        เช็คอินแล้ว
-                      </span>
-                      <p class="text-[10px] text-slate-500 font-mono mt-1">เวลา 09:45 น.</p>
-                    </div>
-                  </td>
-                  <td class="p-4 text-center">
-                    <button class="text-slate-400 hover:text-slate-600 px-3 py-1 text-xs underline font-medium">รายละเอียด</button>
-                  </td>
-                </tr>
+              <tbody id="bookingTableBody" class="text-sm text-slate-700">
+                <tr><td colspan="7" class="text-center p-8 text-slate-400">กรุณาล็อกอินเพื่อโหลดข้อมูล...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ========================================== -->
-      <!-- VIEW 2: หน้าจัดการคลาสเรียน -->
-      <!-- ========================================== -->
+      <!-- VIEW 2: คลาสเรียน -->
       <div id="viewClass" class="max-w-[1000px] mx-auto hidden transition-opacity duration-300">
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          
           <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-white gap-4">
             <div>
               <h2 class="font-bold text-lg text-slate-800">ฐานข้อมูลคลาสเรียน (Class Master)</h2>
-              <p class="text-xs text-slate-500 mt-1">เพิ่ม แก้ไข หรือปิดรับสมัครคลาสเรียนได้ที่นี่</p>
             </div>
-            <button onclick="openClassModal()" class="bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-pink-500/30 transition flex items-center active:scale-95">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-              เพิ่มคลาสใหม่
-            </button>
+            <div class="flex space-x-2">
+              <button onclick="fetchClasses()" class="bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 transition">🔄</button>
+              <button onclick="openClassModal()" class="bg-gradient-to-r from-pink-500 to-red-500 hover:opacity-90 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-md transition">
+                + เพิ่มคลาสใหม่
+              </button>
+            </div>
           </div>
-          
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -192,217 +136,309 @@
                   <th class="p-4 font-semibold text-center w-24">จัดการ</th>
                 </tr>
               </thead>
-              <tbody class="text-sm text-slate-700">
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition group">
-                  <td class="p-4 font-mono text-slate-500 font-bold">C001</td>
-                  <td class="p-4 text-pink-600 font-bold">Yoga Basic</td>
-                  <td class="p-4 text-slate-600">10:00 - 11:30 น.</td>
-                  <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-green-100 text-green-600 text-xs font-bold">เปิดรับ</span></td>
-                  <td class="p-4 text-center">
-                    <button onclick="openClassModal('C001', 'Yoga Basic', '10:00 - 11:30 น.', 'เปิดรับ')" class="text-slate-400 hover:text-pink-500 transition p-1 bg-white border border-slate-200 rounded shadow-sm hover:border-pink-200">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                  </td>
-                </tr>
+              <tbody id="classTableBody" class="text-sm text-slate-700">
+                <tr><td colspan="5" class="text-center p-8 text-slate-400">กรุณาล็อกอินเพื่อโหลดข้อมูล...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODAL 1: ตรวจสอบสลิป (Slip Verification) -->
-  <!-- ========================================== -->
+  <!-- MODAL: ตรวจสลิป -->
   <div id="slipModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 invisible transition-all duration-300">
     <div id="slipModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col md:flex-row overflow-hidden transform scale-95 transition-all duration-300">
-      
-      <!-- ภาพสลิป -->
-      <div class="w-full md:w-1/2 bg-slate-100 p-4 flex items-center justify-center border-r border-slate-100 relative">
-        <p class="absolute top-4 left-4 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-md shadow">รูปภาพสลิป</p>
-        <img id="modalSlipImg" src="" alt="Slip" class="max-h-[60vh] object-contain rounded-lg shadow-sm">
+      <div class="w-full md:w-1/2 bg-slate-100 p-4 flex items-center justify-center border-r border-slate-100 relative min-h-[300px]">
+        <p class="absolute top-4 left-4 bg-black/50 text-white text-xs px-3 py-1 rounded-full">รูปภาพสลิป</p>
+        <img id="modalSlipImg" src="" class="max-h-[60vh] object-contain rounded-lg shadow-sm" alt="Slip">
       </div>
-      
-      <!-- ข้อมูลและปุ่มจัดการ -->
       <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
         <div class="flex justify-between items-start mb-6">
-          <div>
-            <h3 class="text-xl font-bold text-slate-800">ตรวจสอบการชำระเงิน</h3>
-            <p class="text-sm text-slate-500 mt-1">กรุณาตรวจสอบยอดเงินให้ตรงกับสลิป</p>
-          </div>
-          <button onclick="closeSlipModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-2 rounded-full transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+          <div><h3 class="text-xl font-bold text-slate-800">ตรวจสอบการชำระเงิน</h3></div>
+          <button onclick="closeSlipModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full transition"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-
-        <div class="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100 space-y-3 shadow-inner">
+        <div class="bg-slate-50 rounded-2xl p-5 mb-8 border border-slate-100 space-y-3">
           <div class="flex justify-between border-b border-slate-200 pb-2"><span class="text-slate-500 text-sm">รหัสจอง</span><span id="modalBkId" class="font-bold text-slate-800 font-mono"></span></div>
           <div class="flex justify-between border-b border-slate-200 pb-2"><span class="text-slate-500 text-sm">ชื่อลูกค้า</span><span id="modalCusName" class="font-bold text-slate-800"></span></div>
-          <div class="flex justify-between pt-1"><span class="text-slate-500 text-sm font-medium">ยอดโอนโดยประมาณ</span><span class="font-bold text-xl text-green-600">฿1,500</span></div>
         </div>
-
         <div class="mt-auto space-y-3">
-          <button onclick="approveSlip()" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md shadow-green-500/20 hover:bg-green-600 transition flex justify-center items-center active:scale-95">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            ยืนยันได้รับเงิน (จองสำเร็จ)
-          </button>
-          <button onclick="rejectSlip()" class="w-full bg-white border border-red-200 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 transition active:scale-95">
-            สลิปไม่ถูกต้อง / ปฏิเสธ
-          </button>
+          <button onclick="updateStatus('จองสำเร็จ')" id="btnApprove" class="w-full bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-green-600 transition">✅ ยืนยันได้รับเงิน (จองสำเร็จ)</button>
+          <button onclick="updateStatus('รอชำระเงิน')" id="btnReject" class="w-full bg-white border border-red-200 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 transition">❌ สลิปไม่ถูกต้อง (กลับไปรอชำระ)</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MODAL 2: จัดการคลาส (Add/Edit Class) -->
-  <!-- ========================================== -->
+  <!-- MODAL: จัดการคลาส -->
   <div id="classModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 opacity-0 invisible transition-all duration-300">
     <div id="classModalContent" class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-all duration-300">
-      
       <div class="p-6 md:p-8">
         <div class="flex justify-between items-center mb-6">
-          <h3 id="classModalTitle" class="text-xl font-bold text-slate-800">เพิ่มคลาสเรียนใหม่</h3>
-          <button onclick="closeClassModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
+          <h3 id="classModalTitle" class="text-xl font-bold text-slate-800">เพิ่มคลาสเรียน</h3>
+          <button onclick="closeClassModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 p-2 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
         </div>
-
         <div class="space-y-4">
+          <div><label class="block text-xs font-bold text-slate-500 mb-1">รหัสคลาส</label><input type="text" id="mClassId" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น C003"></div>
+          <div><label class="block text-xs font-bold text-slate-500 mb-1">ชื่อคลาสเรียน</label><input type="text" id="mClassName" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น Zumba Dance"></div>
+          <div><label class="block text-xs font-bold text-slate-500 mb-1">เวลาเรียน</label><input type="text" id="mClassTime" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm" placeholder="เช่น 17:00 - 18:00 น."></div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 mb-1 ml-1">รหัสคลาส (Class ID)</label>
-            <input type="text" id="mClassId" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none" placeholder="เช่น C003">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 mb-1 ml-1">ชื่อคลาสเรียน</label>
-            <input type="text" id="mClassName" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none" placeholder="เช่น Zumba Dance">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 mb-1 ml-1">เวลาเรียน</label>
-            <input type="text" id="mClassTime" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none" placeholder="เช่น 17:00 - 18:00 น.">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-500 mb-1 ml-1">สถานะ</label>
-            <select id="mClassStatus" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none appearance-none">
+            <label class="block text-xs font-bold text-slate-500 mb-1">สถานะ</label>
+            <select id="mClassStatus" class="w-full px-4 py-3 bg-slate-50 border rounded-xl text-sm">
               <option value="เปิดรับ">เปิดรับสมัคร</option>
               <option value="ปิดชั่วคราว">ปิดชั่วคราว</option>
             </select>
           </div>
         </div>
-
-        <div class="mt-8">
-          <button onclick="saveClass()" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-slate-700 transition active:scale-95">
-            บันทึกข้อมูล
-          </button>
-        </div>
+        <div class="mt-8"><button onclick="saveClass()" id="btnSaveClass" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl hover:bg-slate-700 transition">บันทึกข้อมูล</button></div>
       </div>
-
     </div>
   </div>
 
-  <!-- ========================================== -->
-  <!-- JAVASCRIPT LOGIC -->
-  <!-- ========================================== -->
+  <!-- JAVASCRIPT SYSTEM -->
   <script>
-    // 1. ระบบ Login (จำลอง)
+    // ⚙️ URL API ของคุณ (ดึงข้อมูลจริง)
+    const API_URL = "https://script.google.com/macros/s/AKfycbywdBJxTfFqr4f311o2L7fhywrmKVzC4HLDNzOFU3fLCLsqNyhwmRBBx4l49MFqSdjA/exec";
+    
+    // --- ระบบ Login & Tabs ---
     function login() {
-      const loginView = document.getElementById('loginView');
-      const dashView = document.getElementById('dashboardView');
-      
-      loginView.classList.add('opacity-0');
+      // (จำลองการล็อกอิน ถ้ารหัสผ่านถูกให้ผ่าน)
+      document.getElementById('loginView').classList.add('opacity-0');
       setTimeout(() => {
-        loginView.classList.add('hidden');
-        dashView.classList.remove('hidden');
-        setTimeout(() => dashView.classList.remove('opacity-0'), 50);
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        setTimeout(() => document.getElementById('dashboardView').classList.remove('opacity-0'), 50);
+        
+        // เมื่อล็อกอินเสร็จ ให้ดึงข้อมูลทันที!
+        fetchBookings();
+        fetchClasses();
       }, 300);
     }
 
     function logout() {
-      const loginView = document.getElementById('loginView');
-      const dashView = document.getElementById('dashboardView');
-      
-      dashView.classList.add('opacity-0');
-      setTimeout(() => {
-        dashView.classList.add('hidden');
-        loginView.classList.remove('hidden');
-        setTimeout(() => loginView.classList.remove('opacity-0'), 50);
-      }, 300);
+      location.reload(); // รีเฟรชหน้าเพื่อออกจากระบบ
     }
 
-    // 2. ระบบสลับ Tabs
     function switchTab(tabName) {
-      const tabs = {
-        'booking': { btn: document.getElementById('tabBooking'), view: document.getElementById('viewBooking') },
-        'class': { btn: document.getElementById('tabClass'), view: document.getElementById('viewClass') }
-      };
-
-      // Reset ทุก Tab
-      Object.keys(tabs).forEach(key => {
-        tabs[key].btn.className = "py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition";
-        tabs[key].view.classList.add('hidden');
-      });
-
-      // Active Tab ที่เลือก
-      tabs[tabName].btn.className = "py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition";
-      tabs[tabName].view.classList.remove('hidden');
+      if (tabName === 'booking') {
+        document.getElementById('tabBooking').className = "py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition";
+        document.getElementById('tabClass').className = "py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition";
+        document.getElementById('viewClass').classList.add('hidden');
+        document.getElementById('viewBooking').classList.remove('hidden');
+      } else {
+        document.getElementById('tabClass').className = "py-3 border-b-2 border-pink-500 text-pink-600 font-bold text-sm transition";
+        document.getElementById('tabBooking').className = "py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium text-sm transition";
+        document.getElementById('viewBooking').classList.add('hidden');
+        document.getElementById('viewClass').classList.remove('hidden');
+      }
     }
 
-    // 3. ระบบ Modal ดูสลิป
+    // --- 📡 ดึงข้อมูลรายการจอง ---
+    async function fetchBookings() {
+      const tbody = document.getElementById('bookingTableBody');
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400 font-medium animate-pulse">กำลังซิงค์ข้อมูลจาก Google Sheet...</td></tr>';
+      
+      try {
+        const response = await fetch(API_URL + "?action=get_bookings");
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          renderBookingTable(result.data);
+          updateStats(result.data);
+        }
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล โปรดลองใหม่</td></tr>';
+      }
+    }
+
+    function renderBookingTable(data) {
+      const tbody = document.getElementById('bookingTableBody');
+      tbody.innerHTML = "";
+      
+      if(data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center p-8 text-slate-400">ยังไม่มีรายการจองในระบบ</td></tr>';
+        return;
+      }
+
+      data.forEach(item => {
+        // ตกแต่งป้ายสถานะ
+        let statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500">${item.status}</span>`;
+        let actionBtn = `<span class="text-slate-300 text-xs">-</span>`;
+        
+        if (item.status === "รอตรวจสอบ") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-600">รอตรวจสลิป</span>`;
+          // ถ้ามีรูปสลิปให้กดดูได้ ถ้าไม่มีก็ให้คลิกไม่ได้
+          const slipUrl = item.slipUrl || "https://via.placeholder.com/400x600?text=No+Slip+Image";
+          actionBtn = `<button onclick="openSlipModal('${item.bookingId}', '${item.name}', '${slipUrl}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm">ตรวจสลิป</button>`;
+        } 
+        else if (item.status === "รอชำระเงิน") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-yellow-100 text-yellow-600">รอชำระเงิน</span>`;
+          actionBtn = `<button onclick="updateStatusFast('${item.bookingId}', 'ยกเลิกการจอง')" class="text-slate-400 hover:text-red-500 px-3 py-1 text-xs underline font-medium">ยกเลิกคิว</button>`;
+        }
+        else if (item.status === "จองสำเร็จ") {
+          statusBadge = `<span class="px-3 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-600">จองสำเร็จ</span>`;
+        }
+
+        // ตกแต่งสถานะเช็คอิน
+        let checkInUI = `<span class="inline-block px-2.5 py-1 rounded-md bg-slate-100 text-slate-400 text-[11px] font-medium">-</span>`;
+        if (item.checkInStatus.includes("แล้ว") || item.checkInStatus === "✅") {
+          checkInUI = `<div class="flex flex-col items-center justify-center">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>เช็คอินแล้ว
+                        </span>
+                        ${item.checkInTime ? `<p class="text-[10px] text-slate-500 font-mono mt-1">${item.checkInTime}</p>` : ''}
+                      </div>`;
+        }
+
+        const row = `
+          <tr class="border-b border-slate-50 hover:bg-slate-50/80 transition">
+            <td class="p-4 font-mono text-slate-500">${item.bookingId}</td>
+            <td class="p-4"><p class="font-bold text-slate-800">${item.name}</p><p class="text-xs text-slate-400">${item.phone}</p></td>
+            <td class="p-4 text-pink-600 font-medium">${item.classId}</td>
+            <td class="p-4 text-slate-600">${item.bookingDate}</td>
+            <td class="p-4 text-center">${statusBadge}</td>
+            <td class="p-4 text-center">${checkInUI}</td>
+            <td class="p-4 text-center">${actionBtn}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function updateStats(data) {
+      let waitSlip = 0, waitPay = 0, success = 0, checkedIn = 0;
+      data.forEach(item => {
+        if (item.status === "รอตรวจสอบ") waitSlip++;
+        if (item.status === "รอชำระเงิน") waitPay++;
+        if (item.status === "จองสำเร็จ") success++;
+        if (item.checkInStatus.includes("แล้ว") || item.checkInStatus === "✅") checkedIn++;
+      });
+      document.getElementById('statWaitSlip').innerText = waitSlip;
+      document.getElementById('statWaitPay').innerText = waitPay;
+      document.getElementById('statSuccess').innerText = success;
+      document.getElementById('statCheckIn').innerText = checkedIn;
+    }
+
+    // --- 📡 ดึงข้อมูลคลาสเรียน ---
+    async function fetchClasses() {
+      const tbody = document.getElementById('classTableBody');
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-400 animate-pulse">กำลังโหลดข้อมูล...</td></tr>';
+      
+      try {
+        const response = await fetch(API_URL + "?action=get_classes");
+        const result = await response.json();
+        
+        if (result.status === "success") {
+          tbody.innerHTML = "";
+          result.data.forEach(c => {
+            const statusStyle = c.status === "เปิดรับ" 
+              ? "bg-green-100 text-green-600" 
+              : "bg-slate-200 text-slate-500";
+              
+            const row = `
+              <tr class="border-b border-slate-50 hover:bg-slate-50 transition">
+                <td class="p-4 font-mono text-slate-500 font-bold">${c.classId}</td>
+                <td class="p-4 text-pink-600 font-bold">${c.className}</td>
+                <td class="p-4 text-slate-600">${c.classTime}</td>
+                <td class="p-4 text-center"><span class="px-2 py-1 rounded ${statusStyle} text-xs font-bold">${c.status}</span></td>
+                <td class="p-4 text-center">
+                  <button onclick="openClassModal('${c.classId}', '${c.className}', '${c.classTime}', '${c.status}')" class="text-slate-400 hover:text-pink-500 transition p-1 bg-white border border-slate-200 rounded shadow-sm">
+                    ✏️ แก้ไข
+                  </button>
+                </td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+          });
+        }
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 p-8">ดึงข้อมูลล้มเหลว</td></tr>';
+      }
+    }
+
+    // --- ระบบจัดการสลิป (อัปเดต Google Sheet) ---
     function openSlipModal(bkId, cusName, imgUrl) {
       document.getElementById('modalBkId').innerText = bkId;
       document.getElementById('modalCusName').innerText = cusName;
       document.getElementById('modalSlipImg').src = imgUrl;
       
-      const modal = document.getElementById('slipModal');
-      const content = document.getElementById('slipModalContent');
-      
-      modal.classList.add('modal-enter');
-      content.classList.add('modal-content-enter');
+      const m = document.getElementById('slipModal');
+      const c = document.getElementById('slipModalContent');
+      m.classList.add('modal-enter'); c.classList.add('modal-content-enter');
     }
 
     function closeSlipModal() {
-      const modal = document.getElementById('slipModal');
-      const content = document.getElementById('slipModalContent');
-      
-      modal.classList.remove('modal-enter');
-      content.classList.remove('modal-content-enter');
+      document.getElementById('slipModal').classList.remove('modal-enter');
+      document.getElementById('slipModalContent').classList.remove('modal-content-enter');
     }
 
-    function approveSlip() { alert("จำลอง: อัปเดตสถานะ 'จองสำเร็จ' เรียบร้อย"); closeSlipModal(); }
-    function rejectSlip() { if(confirm("ปฏิเสธสลิปนี้?")) closeSlipModal(); }
+    async function updateStatus(newStatus) {
+      const bookingId = document.getElementById('modalBkId').innerText;
+      
+      document.getElementById('btnApprove').innerText = "กำลังบันทึก...";
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "update_status", bookingId: bookingId, newStatus: newStatus })
+        });
+        closeSlipModal();
+        fetchBookings(); // โหลดตารางใหม่
+        document.getElementById('btnApprove').innerText = "✅ ยืนยันได้รับเงิน (จองสำเร็จ)";
+      } catch(e) { alert("เกิดข้อผิดพลาด"); }
+    }
 
-    // 4. ระบบ Modal จัดการคลาส
-    function openClassModal(id = '', name = '', time = '', status = 'เปิดรับ') {
+    async function updateStatusFast(bookingId, newStatus) {
+      if(!confirm(`ต้องการเปลี่ยนสถานะคิว ${bookingId} เป็น "${newStatus}" ใช่หรือไม่?`)) return;
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "update_status", bookingId: bookingId, newStatus: newStatus })
+        });
+        fetchBookings();
+      } catch(e) {}
+    }
+
+    // --- ระบบจัดการคลาส (เพิ่ม/แก้ไข) ---
+    function openClassModal(id='', name='', time='', status='เปิดรับ') {
       document.getElementById('classModalTitle').innerText = id ? "แก้ไขคลาสเรียน" : "เพิ่มคลาสเรียนใหม่";
       document.getElementById('mClassId').value = id;
       document.getElementById('mClassName').value = name;
       document.getElementById('mClassTime').value = time;
       document.getElementById('mClassStatus').value = status;
       
-      // ล็อกรหัสคลาสไว้ถ้าเป็นการแก้ไข (ป้องกันแก้รหัส)
-      document.getElementById('mClassId').readOnly = id ? true : false;
-      document.getElementById('mClassId').className = id 
-        ? "w-full px-4 py-3 bg-slate-100 text-slate-400 border border-slate-200 rounded-xl text-sm outline-none cursor-not-allowed" 
-        : "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-pink-400 focus:ring-1 outline-none";
-
-      const modal = document.getElementById('classModal');
-      const content = document.getElementById('classModalContent');
-      
-      modal.classList.add('modal-enter');
-      content.classList.add('modal-content-enter');
+      const m = document.getElementById('classModal');
+      const c = document.getElementById('classModalContent');
+      m.classList.add('modal-enter'); c.classList.add('modal-content-enter');
     }
 
     function closeClassModal() {
-      const modal = document.getElementById('classModal');
-      const content = document.getElementById('classModalContent');
-      
-      modal.classList.remove('modal-enter');
-      content.classList.remove('modal-content-enter');
+      document.getElementById('classModal').classList.remove('modal-enter');
+      document.getElementById('classModalContent').classList.remove('modal-content-enter');
     }
 
-    function saveClass() { alert("จำลอง: บันทึกข้อมูลคลาสเรียบร้อย"); closeClassModal(); }
+    async function saveClass() {
+      const classData = {
+        classId: document.getElementById('mClassId').value,
+        className: document.getElementById('mClassName').value,
+        classTime: document.getElementById('mClassTime').value,
+        status: document.getElementById('mClassStatus').value
+      };
+      
+      if(!classData.classId || !classData.className) return alert("กรุณากรอกรหัสและชื่อคลาสให้ครบ");
+
+      document.getElementById('btnSaveClass').innerText = "กำลังบันทึก...";
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: "save_class", classData: classData })
+        });
+        closeClassModal();
+        fetchClasses(); // โหลดตารางใหม่
+        document.getElementById('btnSaveClass').innerText = "บันทึกข้อมูล";
+      } catch(e) { alert("เกิดข้อผิดพลาด"); }
+    }
   </script>
 </body>
 </html>
