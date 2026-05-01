@@ -619,25 +619,60 @@
     function toggleEdit() { document.getElementById('editForm').classList.toggle('hidden'); }
 
     async function saveEdit() {
-      const name = document.getElementById('editName').value; const phone = document.getElementById('editPhone').value;
-      const classId = document.getElementById('editClassSchedule').value; const bookingDate = document.getElementById('editBookingDate').value;
+      const name = document.getElementById('editName').value;
+      const phone = document.getElementById('editPhone').value;
+      const classId = document.getElementById('editClassSchedule').value;
+      const bookingDate = document.getElementById('editBookingDate').value;
+
       if(!name || !phone || !bookingDate) return alert(t('alertIncomplete'));
+
       const selectedClass = allClassData.find(c => c.classId === classId);
       if (selectedClass) {
+        // [แก้บั๊ก] เพิ่มการเทียบวันที่ให้ครอบคลุมทั้งภาษาไทยและอังกฤษ
         const daysThai = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];
-        const d = new Date(bookingDate.split('-')[0], bookingDate.split('-')[1] - 1, bookingDate.split('-')[2]);
-        if (!selectedClass.date.replace('วัน', '').trim().toUpperCase().includes(daysThai[d.getDay()]) && !daysThai[d.getDay()].includes(selectedClass.date.replace('วัน', '').trim().toUpperCase())) {
-          return alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
+        const daysEng = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+        
+        const dateParts = bookingDate.split('-');
+        const d = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        const dayIndex = d.getDay();
+        const dayNameThai = daysThai[dayIndex];
+        const dayNameEng = daysEng[dayIndex];
+        
+        const classDayStr = selectedClass.date.replace('วัน', '').trim().toUpperCase();
+        
+        if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
+            !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
+          alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
+          return;
         }
-        if (myBookingsData.some(b => b.bookingId !== currentBookingId && b.className === selectedClass.className && b.time === selectedClass.time && b.bookingDate === bookingDate)) {
-          return alert(t('alertDuplicate'));
+
+        const isDuplicate = myBookingsData.some(b => 
+          b.bookingId !== currentBookingId && 
+          b.className === selectedClass.className && 
+          b.time === selectedClass.time && 
+          b.bookingDate === bookingDate
+        );
+
+        if (isDuplicate) {
+          alert(t('alertDuplicate'));
+          return;
         }
       }
+      
       document.getElementById('loading').style.display = 'flex';
       try {
-        await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) });
-        await fetchData(); showToast(t('saveSuccess'));
-      } catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
+        await fetch(GAS_URL, { 
+          method: "POST", 
+          body: JSON.stringify({ action: "edit", bookingId: currentBookingId, name, phone, classId, bookingDate }) 
+        });
+        
+        await fetchData(); 
+        showToast(t('saveSuccess'));
+        
+      } catch (error) {
+        alert(t('alertError'));
+        document.getElementById('loading').style.display = 'none';
+      }
     }
 
     async function cancelBooking() {
