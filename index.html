@@ -317,7 +317,6 @@
         navHome: "เลือกคลาส",
         navMyBooking: "การจองของฉัน",
         saveSuccess: "✓ บันทึกข้อมูลสำเร็จ",
-        dayPrefix: "วัน",
         datePrefix: "วันที่ ",
         statusPending: "รอชำระเงิน",
         statusPaid: "ชำระเงินแล้ว",
@@ -328,7 +327,7 @@
         btnFull: "คลาสเต็ม",
         btnBook: "จองคลาส",
         alertIncomplete: "กรุณากรอกข้อมูลให้ครบถ้วนครับ",
-        alertDateMismatchPrefix: "วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียน",
+        alertDateMismatchPrefix: "วันที่คุณเลือกไม่ตรงกับตารางเรียน (คลาสนี้เรียนวัน",
         alertDateMismatchSuffix: ") กรุณาเลือกวันที่ปฏิทินให้ถูกต้องครับ",
         alertDuplicate: "คุณมีคลาสเรียนเวลาดังกล่าวแล้ว",
         alertCancelConfirm: "คุณต้องการยกเลิกการจองนี้ใช่หรือไม่?",
@@ -370,7 +369,6 @@
         navHome: "Classes",
         navMyBooking: "My Bookings",
         saveSuccess: "✓ Saved successfully",
-        dayPrefix: "",
         datePrefix: "Date: ",
         statusPending: "Pending",
         statusPaid: "Paid",
@@ -389,17 +387,20 @@
       }
     };
 
+    // [แก้ไขใหม่] ระบบแปลภาษา "วัน" ที่ฉลาดขึ้น โดยตัดคำว่า "วัน" หรือ "dayPrefix" ออกไปเลย
     function translateDayName(rawDate) {
       if(!rawDate) return "";
-      let cleanDay = rawDate.replace(/^วัน/, '').trim();
+      let cleanDay = rawDate.replace(/^วัน/, '').trim(); // ตัดคำว่า "วัน" ภาษาไทยออกก่อนเสมอ
       let cleanDayUpper = cleanDay.toUpperCase();
 
-      const mapToTh = { "SUNDAY": "อาทิตย์", "MONDAY": "จันทร์", "TUESDAY": "อังคาร", "WEDNESDAY": "พุธ", "THURSDAY": "พฤหัสบดี", "FRIDAY": "ศุกร์", "SATURDAY": "เสาร์" };
+      const mapToTh = { "SUNDAY": "วันอาทิตย์", "MONDAY": "วันจันทร์", "TUESDAY": "วันอังคาร", "WEDNESDAY": "วันพุธ", "THURSDAY": "วันพฤหัสบดี", "FRIDAY": "วันศุกร์", "SATURDAY": "วันเสาร์" };
       const mapToEn = { "อาทิตย์": "SUNDAY", "จันทร์": "MONDAY", "อังคาร": "TUESDAY", "พุธ": "WEDNESDAY", "พฤหัสบดี": "THURSDAY", "ศุกร์": "FRIDAY", "เสาร์": "SATURDAY" };
 
       if (currentLang === 'th') {
-        return mapToTh[cleanDayUpper] || cleanDay;
+        // โหมดไทย ให้มีคำว่า "วัน" นำหน้าเสมอ
+        return mapToTh[cleanDayUpper] || `วัน${cleanDay}`;
       } else {
+        // โหมดอังกฤษ โชว์คำภาษาอังกฤษเพียวๆ ไม่ต้องมีคำนำหน้า
         return mapToEn[cleanDay] || cleanDayUpper;
       }
     }
@@ -434,10 +435,20 @@
 
       updateGreetingName();
       
+      // ถ้ามีการโหลดข้อมูลอยู่แล้ว ให้ re-render หน้าจอใหม่เพื่อเปลี่ยนภาษา
       if (allClassData.length > 0) {
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
-        if(!document.getElementById('classListView').classList.contains('hidden')) showClassesForDay(document.getElementById('selectedDayTitle').innerText.replace(translations[currentLang].dayPrefix,'').trim());
+        
+        // อัปเดตภาษาที่หัวข้อวัน ตอนอยู่ในหน้า Class List
+        if(!document.getElementById('classListView').classList.contains('hidden')) {
+          const currentDayRaw = document.getElementById('selectedClassId').getAttribute('data-raw-day');
+          if(currentDayRaw) {
+             showClassesForDay(currentDayRaw);
+          }
+        }
+
         if(!document.getElementById('myBookingsListState').classList.contains('hidden')) renderBookingsList();
+        
         if(!document.getElementById('detailViewWrapper').classList.contains('hidden')) {
            const b = myBookingsData.find(x => x.bookingId === currentBookingId);
            if(b) setupMyBookingData(b);
@@ -588,7 +599,7 @@
         let statusColor = (booking.status === "ชำระเงินแล้ว" || booking.status === "จองสำเร็จ") 
                         ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700";
         
-        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : `${t('dayPrefix')}${translateDayName(booking.date || booking.dayOfWeek)}`;
+        let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : translateDayName(booking.date || booking.dayOfWeek);
         let statusText = translateStatus(booking.status);
 
         html += `
@@ -633,7 +644,7 @@
             <div class="w-11 h-11 bg-pink-50 rounded-full flex items-center justify-center mb-2 text-pink-600 shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             </div>
-            <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${t('dayPrefix')}${translateDayName(day)}</span>
+            <span class="text-sm font-bold text-slate-800 break-words w-full px-1">${translateDayName(day)}</span>
             <span class="text-xs text-slate-500 mt-1">${classCount} ${t('classesCount')}</span>
           </div>
         `;
@@ -641,12 +652,14 @@
       document.getElementById('dayContainer').innerHTML = html;
     }
 
-    function showClassesForDay(selectedDay) {
+    function showClassesForDay(selectedDayRaw) {
       document.getElementById('dayListView').classList.add('hidden');
       document.getElementById('classListView').classList.remove('hidden');
       
-      document.getElementById('selectedDayTitle').innerText = `${t('dayPrefix')}${translateDayName(selectedDay)}`;
-      const filteredClasses = allClassData.filter(c => c.date === selectedDay);
+      document.getElementById('selectedClassId').setAttribute('data-raw-day', selectedDayRaw);
+      document.getElementById('selectedDayTitle').innerText = translateDayName(selectedDayRaw);
+      
+      const filteredClasses = allClassData.filter(c => c.date === selectedDayRaw);
       
       let html = '';
       filteredClasses.forEach(c => {
@@ -701,7 +714,7 @@
       document.getElementById('bName').innerText = booking.name;
       document.getElementById('bClassName').innerText = booking.className;
       
-      let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : `${t('dayPrefix')}${translateDayName(booking.date || booking.dayOfWeek)}`;
+      let showDate = (booking.bookingDate && booking.bookingDate !== "ไม่ระบุ") ? formatThaiDate(booking.bookingDate) : translateDayName(booking.date || booking.dayOfWeek);
       document.getElementById('bSpecificDate').innerText = showDate;
       document.getElementById('bTime').innerText = booking.time;
       
@@ -716,7 +729,7 @@
       relatedClasses.forEach(c => {
         const option = document.createElement('option');
         option.value = c.classId;
-        option.text = `${t('dayPrefix')}${translateDayName(c.date)} | ${c.time}`;
+        option.text = `${translateDayName(c.date)} | ${c.time}`;
         if (c.classId === booking.classId) option.selected = true; 
         scheduleSelect.appendChild(option);
       });
@@ -738,7 +751,7 @@
 
     function openForm(classId, className, date, time) {
       document.getElementById('selectedClassId').value = classId;
-      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${t('dayPrefix')}${translateDayName(date)} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
+      document.getElementById('selectedClassText').innerHTML = `<span class="block text-xs text-slate-500 mb-1">${translateDayName(date)} | ${time}</span><b class="text-base text-pink-700">${className}</b>`;
       
       document.getElementById('name').value = savedName;
       document.getElementById('phone').value = savedPhone;
@@ -792,7 +805,7 @@
           
           if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
               !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-            alert(`${t('alertDateMismatchPrefix')}${t('dayPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
+            alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
             checkbox.checked = false;
             return;
           }
@@ -851,7 +864,7 @@
         
         if (!classDayStr.includes(dayNameThai) && !dayNameThai.includes(classDayStr) &&
             !classDayStr.includes(dayNameEng) && !dayNameEng.includes(classDayStr)) {
-          alert(`${t('alertDateMismatchPrefix')}${t('dayPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
+          alert(`${t('alertDateMismatchPrefix')}${translateDayName(selectedClass.date)}${t('alertDateMismatchSuffix')}`);
           return;
         }
 
