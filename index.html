@@ -40,6 +40,12 @@
     /* Toggle Switch */
     .toggle-checkbox:checked { right: 0; border-color: #ef4444; }
     .toggle-checkbox:checked + .toggle-label { background-color: #ef4444; }
+
+    /* มิติเพิ่มเติมสำหรับส่วนที่เป็น Gradient */
+    .bg-pink-gradient {
+      background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 p-4 pb-24"> 
@@ -52,26 +58,25 @@
     <span data-i18n="saveSuccess">✓ บันทึกข้อมูลสำเร็จ</span>
   </div>
 
-  <div class="max-w-md md:max-w-xl mx-auto mb-6 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+  <div class="max-w-md md:max-w-xl mx-auto mb-6 flex items-center justify-between bg-pink-gradient p-5 rounded-[2rem] border border-pink-400/20">
     <div class="flex items-center space-x-4">
-      <img id="profileImage" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-pink-100 object-cover hidden">
+      <img id="profileImage" src="" alt="Profile" class="w-12 h-12 rounded-full border-2 border-white/50 object-cover hidden">
       <div>
-        <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-pink-500 to-red-500 text-transparent bg-clip-text">Yoka Booking</h1>
-        <p id="profileName" class="text-sm text-slate-500 mt-0.5" data-i18n="loadingData">กำลังโหลดข้อมูล...</p>
+        <h1 class="text-xl font-bold tracking-tight text-white drop-shadow-sm">Yoka Booking</h1>
+        <p id="profileName" class="text-xs text-pink-100 font-medium opacity-90" data-i18n="loadingData">กำลังโหลดข้อมูล...</p>
       </div>
     </div>
     
-    <div class="flex items-center">
-      <span class="text-[10px] font-bold text-slate-400 mr-1.5" id="langThText">TH</span>
-      <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-        <input type="checkbox" name="toggle" id="langToggle" onchange="toggleLanguage()" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-300 appearance-none cursor-pointer transition-all duration-300 z-10 top-0.5 left-0.5"/>
-        <label for="langToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-300 cursor-pointer transition-colors duration-300"></label>
+    <div class="flex items-center bg-black/10 px-3 py-1.5 rounded-full border border-white/10">
+      <span class="text-[10px] font-bold text-white/60 mr-1.5" id="langThText">TH</span>
+      <div class="relative inline-block w-8 mr-1.5 align-middle select-none transition duration-200 ease-in">
+        <input type="checkbox" name="toggle" id="langToggle" onchange="toggleLanguage()" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-2 border-transparent appearance-none cursor-pointer transition-all duration-300 z-10 top-0.5 left-0.5"/>
+        <label for="langToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-white/30 cursor-pointer transition-colors duration-300"></label>
       </div>
-      <span class="text-[10px] font-bold text-slate-400" id="langEnText">EN</span>
+      <span class="text-[10px] font-bold text-white/60" id="langEnText">EN</span>
     </div>
   </div>
 
-  <!-- TAB 1: จองคลาสเรียน (HOME) -->
   <div id="dayListView" class="max-w-md md:max-w-xl mx-auto hidden">
     <h2 class="text-base font-bold text-slate-800 mb-3 px-1" data-i18n="selectDateTitle">เลือกวันที่ต้องการเรียน</h2>
     <div id="dayContainer" class="grid grid-cols-2 gap-3 w-full"></div>
@@ -123,7 +128,6 @@
     </label>
   </div>
 
-  <!-- TAB 2: การจองของฉัน (MY BOOKINGS) -->
   <div id="myBookingView" class="max-w-md md:max-w-xl mx-auto hidden">
     
     <div id="emptyBookingState" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center hidden">
@@ -192,14 +196,12 @@
             <button id="btnCancel" onclick="cancelBooking()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition" data-i18n="btnCancelBooking">ยกเลิกการจอง</button>
           </div>
           
-             <!-- [เพิ่มใหม่] กล่องข้อความรอเจ้าหน้าที่ติดต่อกลับ (แสดงเฉพาะตอนรอชำระเงิน) -->
-          <div id="pendingContactMsg" class="hidden mt-4 pt-4 border-t border-dashed border-slate-200 text-center">
+               <div id="pendingContactMsg" class="hidden mt-4 pt-4 border-t border-dashed border-slate-200 text-center">
             <p class="text-[13px] font-bold text-blue-600 bg-blue-50 py-2.5 px-3 rounded-xl inline-block w-full shadow-sm border border-blue-100" data-i18n="pendingContactMsg">
               ⏳ รอเจ้าหน้าที่ติดต่อกลับ แจ้งยอดชำระเงิน เพื่อยืนยันการจอง
             </p>
           </div>
           
-          <!-- [เพิ่มใหม่] ข้อความขอบคุณเมื่อชำระเงินแล้ว -->
           <div id="thankYouContainer" class="hidden border-t border-dashed border-slate-200 pt-3 mt-4 text-right">
             <p class="text-sm font-bold text-green-600 flex items-center justify-end gap-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -212,7 +214,6 @@
         </div>
       </div>
 
-      <!-- กล่องชำระเงิน และอัปโหลดสลิป -->
       <div id="paymentSection" class="mt-4 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative hidden">
         <div class="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -254,15 +255,15 @@
     </div>
   </div>
 
-  <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-white border-t border-slate-200 flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_15px_rgba(0,0,0,0.03)] z-40">
-    <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors">
+  <div class="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-md md:max-w-xl bg-pink-gradient flex justify-around items-center pb-safe pt-2 px-2 shadow-[0_-10px_20px_rgba(236,72,153,0.3)] z-40 rounded-t-[1.5rem]">
+    <button id="tabHome" onclick="switchTab('home')" class="flex-1 flex flex-col items-center p-2 text-white transition-all">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
       <span class="text-[10px] font-bold" data-i18n="navHome">เลือกคลาส</span>
     </button>
-    <button id="tabBooking" onclick="switchTab('mybooking')" class="flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors relative">
+    <button id="tabBooking" onclick="switchTab('mybooking')" class="flex-1 flex flex-col items-center p-2 text-white/60 hover:text-white transition-all relative">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>
       <span class="text-[10px] font-medium" data-i18n="navMyBooking">การจองของฉัน</span>
-      <span id="navBadge" class="absolute top-1 right-[calc(50%-16px)] bg-red-500 w-3.5 h-3.5 rounded-full hidden border-2 border-white"></span>
+      <span id="navBadge" class="absolute top-1 right-[calc(50%-16px)] bg-white w-2 h-2 rounded-full hidden"></span>
     </button>
   </div>
 
@@ -343,8 +344,8 @@
     function applyLanguage() {
       const toggleBtn = document.getElementById('langToggle');
       toggleBtn.checked = currentLang === 'en';
-      document.getElementById('langEnText').className = currentLang === 'en' ? "text-[10px] font-bold text-slate-800" : "text-[10px] font-bold text-slate-400";
-      document.getElementById('langThText').className = currentLang === 'th' ? "text-[10px] font-bold text-slate-800 mr-1.5" : "text-[10px] font-bold text-slate-400 mr-1.5";
+      document.getElementById('langEnText').className = currentLang === 'en' ? "text-[10px] font-bold text-white" : "text-[10px] font-bold text-white/50";
+      document.getElementById('langThText').className = currentLang === 'th' ? "text-[10px] font-bold text-white mr-1.5" : "text-[10px] font-bold text-white/50 mr-1.5";
 
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -407,14 +408,12 @@
         profileImg.classList.remove('hidden');
         await fetchData(); 
         
-        // [เพิ่มใหม่] ระบบ Auto-Refresh ทุกๆ 10 วินาที (แบบเงียบๆ ไม่ขึ้นตัวโหลด)
         setInterval(fetchDataSilent, 10000);
       } else {
         liff.login();
       }
     }
 
-    // [เพิ่มใหม่] ฟังก์ชันดึงข้อมูลแบบเบื้องหลังเพื่อให้ UI อัปเดตทันทีเมื่อฐานข้อมูลเปลี่ยน
     async function fetchDataSilent() {
       try {
         const response = await fetch(`${GAS_URL}?uid=${userUid}`);
@@ -423,7 +422,6 @@
         let bookingsArr = (data.bookings && data.bookings.length > 0) ? data.bookings : (data.booking ? [data.booking] : []);
         myBookingsData = bookingsArr;
 
-        // อัปเดตการแสดงผลในหน้าจอที่เปิดอยู่
         if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
         if(!document.getElementById('classListView').classList.contains('hidden')) {
           const currentDayRaw = document.getElementById('selectedClassId').getAttribute('data-raw-day');
@@ -470,9 +468,9 @@
       const tabBooking = document.getElementById('tabBooking');
       
       if (tab === 'home') {
-        tabHome.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-white transition-all scale-110 drop-shadow-md";
         tabHome.querySelector('span').className = "text-[10px] font-bold";
-        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors relative";
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-white/50 hover:text-white transition-all relative";
         tabBooking.querySelector('span').className = "text-[10px] font-medium";
         
         document.getElementById('myBookingView').classList.add('hidden');
@@ -480,9 +478,9 @@
         document.getElementById('classListView').classList.add('hidden');
         renderDayList();
       } else if (tab === 'mybooking') {
-        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-pink-600 transition-colors relative";
+        tabBooking.className = "flex-1 flex flex-col items-center p-2 text-white transition-all scale-110 drop-shadow-md relative";
         tabBooking.querySelector('span').className = "text-[10px] font-bold";
-        tabHome.className = "flex-1 flex flex-col items-center p-2 text-slate-400 hover:text-pink-500 transition-colors";
+        tabHome.className = "flex-1 flex flex-col items-center p-2 text-white/50 hover:text-white transition-all";
         tabHome.querySelector('span').className = "text-[10px] font-medium";
         
         document.getElementById('dayListView').classList.add('hidden');
@@ -553,7 +551,6 @@
       renderClassesOnly(selectedDayRaw);
     }
 
-    // [แยกออกมาเพื่อให้ใช้ซ้ำตอน Silent Refresh ได้]
     function renderClassesOnly(selectedDayRaw) {
       const filteredClasses = allClassData.filter(c => c.date === selectedDayRaw);
       let html = '';
@@ -605,38 +602,23 @@
         scheduleSelect.appendChild(option);
       });
 
-      // ==========================================
-      // [ส่วนที่เพิ่มใหม่] รีเซ็ตกล่องอัปโหลดสลิป
-      // ==========================================
       const fileInput = document.getElementById('slipFileInput');
       const fileNameDisplay = document.getElementById('fileNameDisplay');
       const btnSubmit = document.getElementById('btnSubmitSlip');
       const statusText = document.getElementById('uploadStatus');
 
-      if (fileInput) {
-        fileInput.value = '';
-        fileInput.parentElement.classList.remove("hidden");
-      }
+      if (fileInput) { fileInput.value = ''; fileInput.parentElement.classList.remove("hidden"); }
       if (fileNameDisplay) {
         fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
         fileNameDisplay.classList.remove("text-green-600");
-        fileNameDisplay.classList.add("text-pink-600");
+        fileNameDisplay.classList.add("text-white");
       }
-      if (btnSubmit) {
-        btnSubmit.classList.add("hidden");
-        btnSubmit.disabled = false;
-        btnSubmit.innerText = t('btnSubmitSlipText');
-      }
-      if (statusText) {
-        statusText.classList.add("hidden");
-        statusText.innerText = "";
-      }
-      // ==========================================
+      if (btnSubmit) { btnSubmit.classList.add("hidden"); btnSubmit.disabled = false; btnSubmit.innerText = t('btnSubmitSlipText'); }
+      if (statusText) { statusText.classList.add("hidden"); statusText.innerText = ""; }
 
       const statusBadge = document.getElementById('bookingStatus');
       const paymentSection = document.getElementById('paymentSection');
       const thankYouContainer = document.getElementById('thankYouContainer');
-      // 1. เพิ่มตัวแปรนี้ ต่อจาก thankYouContainer (ประมาณบรรทัดที่ 465)
       const pendingContactMsg = document.getElementById('pendingContactMsg');
       
       statusBadge.innerText = translateStatus(booking.status);
@@ -647,28 +629,14 @@
         document.getElementById('btnCancel').classList.add('hidden');
         paymentSection.classList.add('hidden');
         thankYouContainer.classList.remove('hidden');
-
-        // 2. เพิ่มคำสั่งนี้เพื่อ ซ่อน ข้อความถ้ายืนยันแล้ว
         pendingContactMsg.classList.add('hidden');
-        
       } else {
         statusBadge.className = "px-4 py-1.5 rounded-full text-sm font-bold bg-yellow-100 text-yellow-700 inline-block";
         document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('btnCancel').classList.remove('hidden');
         thankYouContainer.classList.add('hidden');
-
-        // 3. เพิ่มคำสั่งนี้เพื่อ โชว์ ข้อความเฉพาะตอน "รอชำระเงิน"
-        if (booking.status === "รอชำระเงิน") {
-          pendingContactMsg.classList.remove('hidden');
-        } else {
-          pendingContactMsg.classList.add('hidden');
-        }
-        
-        if (booking.status === "รอตรวจสอบ") {
-          paymentSection.classList.add('hidden');
-        } else {
-          paymentSection.classList.remove('hidden');
-        }
+        if (booking.status === "รอชำระเงิน") { pendingContactMsg.classList.remove('hidden'); } else { pendingContactMsg.classList.add('hidden'); }
+        if (booking.status === "รอตรวจสอบ") { paymentSection.classList.add('hidden'); } else { paymentSection.classList.remove('hidden'); }
       }
       document.getElementById('editForm').classList.add('hidden'); 
     }
@@ -769,11 +737,11 @@
 
       if (fileInput.files && fileInput.files[0]) {
         fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ <span data-i18n="fileSelectedPrefix">${t('fileSelectedPrefix')}</span> ${fileInput.files[0].name}</span>`;
-        fileNameDisplay.classList.replace("text-pink-600", "text-green-600");
+        fileNameDisplay.className = "text-sm text-green-200 font-medium flex items-center justify-center gap-2";
         btnSubmit.classList.remove("hidden");
       } else {
         fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
-        fileNameDisplay.classList.replace("text-green-600", "text-pink-600");
+        fileNameDisplay.className = "text-sm text-white font-medium flex items-center justify-center gap-2";
         btnSubmit.classList.add("hidden");
       }
     }
