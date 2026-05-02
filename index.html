@@ -729,6 +729,7 @@
       catch (error) { alert(t('alertError')); document.getElementById('loading').style.display = 'none'; }
     }
 
+    // 🟢 [อัปเดต] ฟังก์ชันเลือกรูปปุ๊บ สั่งอัปโหลดอัตโนมัติทันที
     function previewFile() {
       const fileInput = document.getElementById('slipFileInput');
       const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -736,9 +737,14 @@
 
       if (fileInput.files && fileInput.files[0]) {
         fileNameDisplay.innerHTML = `<span class="truncate w-full block">✅ <span data-i18n="fileSelectedPrefix">${t('fileSelectedPrefix')}</span> ${fileInput.files[0].name}</span>`;
-        // เปลี่ยนเป็นสีเขียวอ่อนเมื่อเลือกไฟล์แล้วเพื่อให้กลมกลืนกับพื้นหลังชมพู
         fileNameDisplay.className = "text-sm text-green-200 font-medium flex items-center justify-center gap-2";
+        
+        // แสดงปุ่มขึ้นมาเพื่อใช้เป็นแถบสถานะ Loading
         btnSubmit.classList.remove("hidden");
+        
+        // 🚀 สั่งเรียกใช้งานฟังก์ชันส่งข้อมูลทันที โดยไม่ต้องรอให้ลูกค้ากดปุ่ม
+        submitSlip(); 
+        
       } else {
         fileNameDisplay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg> <span data-i18n="uploadSlipText">${t('uploadSlipText')}</span>`;
         fileNameDisplay.className = "text-sm text-white font-medium flex items-center justify-center gap-2";
