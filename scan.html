@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ระบบเช็คอิน YOKA</title>
+  <title>ระบบสแกนตัดสิทธิ์ YOKA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -29,8 +29,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
         </svg>
       </div>
-      <h1 class="text-xl font-bold text-slate-800 mb-1">สแกนเช็คอินเข้าคลาส</h1>
-      <p class="text-sm text-slate-500 mb-6">สแกน QR Code จาก E-Ticket ของลูกค้า</p>
+      <h1 class="text-xl font-bold text-slate-800 mb-1">สแกนตัดสิทธิ์เข้าเรียน</h1>
+      <p class="text-sm text-slate-500 mb-6">สแกน QR Code จากโปรไฟล์ของลูกค้า</p>
     </div>
     
     <button id="btnScan" onclick="startScan()" class="w-full bg-gradient-to-r from-pink-500 to-red-500 text-white font-medium py-3.5 rounded-2xl shadow-sm hover:opacity-90 transition disabled:opacity-50 hidden active:scale-95">
@@ -61,9 +61,9 @@
         try {
           const result = await liff.scanCodeV2();
           if (result && result.value) {
-            const bookingId = result.value;
-            renderUI('loading', { message: "กำลังตรวจสอบรหัส..." });
-            await sendCheckIn(bookingId);
+            const lineId = result.value; // ค่าที่ได้จะเป็น Line ID ของลูกค้า
+            renderUI('loading', { message: "กำลังตรวจสอบสิทธิ์..." });
+            await sendCheckIn(lineId);
           }
         } catch (err) {
           renderUI('error', { message: "ยกเลิกการสแกน หรือเกิดข้อผิดพลาด" });
@@ -73,10 +73,11 @@
       }
     }
 
-    async function sendCheckIn(bookingId) {
+    async function sendCheckIn(lineId) {
       document.getElementById('btnScan').disabled = true;
       try {
-        const payload = { action: "checkin", bookingId: bookingId };
+        // เปลี่ยน action เป็น deductCredit เพื่อให้ GAS รู้ว่าเป็นระบบแพ็กเกจใหม่
+        const payload = { action: "deductCredit", lineId: lineId };
         const response = await fetch(GAS_URL, {
           method: 'POST',
           body: JSON.stringify(payload)
@@ -84,11 +85,11 @@
         const result = await response.json();
 
         if (result.success) {
-          renderUI('success', { name: result.name, time: result.time });
-        } else if (result.alreadyCheckedIn) {
-          renderUI('already', { name: result.name, time: result.time });
+          renderUI('success', { name: result.name, time: result.time, remaining: result.remaining });
+        } else if (result.noCredit) {
+          renderUI('no_credit', { name: result.name }); // กรณีสิทธิ์หมด
         } else {
-          renderUI('error', { message: result.message || "รหัสไม่ถูกต้อง" });
+          renderUI('error', { message: result.message || "ไม่พบข้อมูลสมาชิก" });
         }
       } catch (error) {
         renderUI('error', { message: "การเชื่อมต่อผิดพลาด กรุณาลองใหม่" });
@@ -113,46 +114,44 @@
       } 
       else if (type === 'success') {
         defaultHeader.classList.add('hidden');
-        document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
+        document.getElementById('btnScan').innerText = "สแกนคนต่อไป";
         document.getElementById('soundSuccess').play().catch(() => {});
         
-        // เช็คว่าชื่อมีคำว่า "คุณ" นำหน้าอยู่แล้วหรือไม่ จะได้ไม่ซ้ำซ้อน
         const displayName = data.name.startsWith("คุณ") ? data.name : "คุณ " + data.name;
 
+        // UI แบบใหม่ โชว์จำนวนสิทธิ์คงเหลือให้แอดมินเห็นชัดๆ
         msgDiv.innerHTML = `
           <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
-            <div class="w-16 h-16 bg-[#f0fdf4] text-[#22c55e] rounded-full flex items-center justify-center text-4xl font-light mb-4 shadow-sm border border-[#bbf7d0]">
-              ✓
+            <div class="w-16 h-16 bg-[#f0fdf4] text-[#22c55e] rounded-full flex items-center justify-center text-4xl font-light mb-4 shadow-sm border border-[#bbf7d0]">✓</div>
+            <p class="text-[17px] font-bold text-slate-800 mb-1">${displayName}</p>
+            <p class="text-sm text-[#22c55e] font-bold mb-4">ตัดสิทธิ์สำเร็จ (-1)</p>
+            
+            <div class="w-full bg-pink-50 border border-pink-100 rounded-xl p-4 mb-3 flex justify-between items-center shadow-sm">
+              <span class="text-sm font-medium text-pink-700">สิทธิ์คงเหลือ</span>
+              <span class="text-2xl font-bold text-pink-600">${data.remaining} <span class="text-sm font-normal">ครั้ง</span></span>
             </div>
-            <p class="text-[17px] font-bold text-slate-800 mb-2">${displayName}</p>
-            <div class="inline-block bg-pink-50 border border-pink-100 px-4 py-1.5 rounded-full mb-5">
-              <p class="text-sm font-medium text-pink-600">เวลาเข้าเรียน: ${data.time}</p>
-            </div>
-            <div class="w-full pt-4 border-t border-slate-100 flex justify-between items-center px-2">
-              <span class="text-xs text-slate-400">ชื่อลูกค้า</span>
-              <span class="text-sm font-bold text-slate-700">${data.name}</span>
+            
+            <div class="w-full pt-3 border-t border-slate-100 flex justify-between items-center px-2">
+              <span class="text-xs text-slate-400">เวลาสแกน</span>
+              <span class="text-sm font-bold text-slate-700">${data.time}</span>
             </div>
           </div>
         `;
       } 
-      else if (type === 'already') {
+      else if (type === 'no_credit') {
         defaultHeader.classList.add('hidden');
-        document.getElementById('btnScan').innerText = "สแกนคิวต่อไป";
+        document.getElementById('btnScan').innerText = "สแกนคนต่อไป";
         document.getElementById('soundError').play().catch(() => {});
 
+        // UI กรณีสิทธิ์เหลือ 0 ครั้ง (เตือนแอดมินให้เก็บเงิน)
         msgDiv.innerHTML = `
           <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
-            <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-3xl font-bold mb-4 shadow-sm border border-blue-100">
-              i
+            <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center text-3xl font-bold mb-4 shadow-sm border border-orange-100">!</div>
+            <p class="text-[17px] font-bold text-slate-800 mb-2">${data.name}</p>
+            <div class="inline-block bg-red-50 border border-red-100 px-4 py-2 rounded-xl mb-4">
+              <p class="text-base font-bold text-red-600">สิทธิ์คงเหลือ 0 ครั้ง</p>
             </div>
-            <p class="text-[17px] font-bold text-slate-800 mb-2">คุณได้ลงทะเบียนแล้ว</p>
-            <div class="inline-block bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-full mb-5">
-              <p class="text-sm font-medium text-blue-600">เวลาเข้าเรียน: ${data.time}</p>
-            </div>
-            <div class="w-full pt-4 border-t border-slate-100 flex justify-between items-center px-2">
-              <span class="text-xs text-slate-400">ชื่อลูกค้า</span>
-              <span class="text-sm font-bold text-slate-700">${data.name}</span>
-            </div>
+            <p class="text-sm text-slate-500">กรุณาแจ้งลูกค้าให้ต่อแพ็กเกจใหม่</p>
           </div>
         `;
       }
@@ -163,10 +162,8 @@
 
         msgDiv.innerHTML = `
           <div class="flex flex-col items-center justify-center pt-2 pb-6 animate-pop-in">
-            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl font-light mb-4 border border-red-100">
-              ✕
-            </div>
-            <p class="text-base font-bold text-slate-800 mb-1">ไม่สามารถเช็คอินได้</p>
+            <div class="w-14 h-14 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-3xl font-light mb-4 border border-red-100">✕</div>
+            <p class="text-base font-bold text-slate-800 mb-1">ข้อผิดพลาด</p>
             <p class="text-sm text-slate-500">${data.message}</p>
           </div>
         `;
