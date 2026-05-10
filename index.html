@@ -476,22 +476,37 @@
         const reader = new FileReader();
         reader.readAsDataURL(fileInput.files[0]);
         reader.onload = async () => {
-          const payload = {
-            action: "uploadSlip",
-            lineId: userUid, customerName: name, packageName: selectedPkg.name,
-            totalCredit: selectedPkg.credit, base64Data: reader.result,
-            mimeType: "image/jpeg", fileName: userUid + "_slip.jpg"
-          };
-          const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-          const result = await response.json();
-          if (result.success) {
-            statusText.innerHTML = "✅ สมัครสำเร็จ! รอแอดมินยืนยันสลิป";
-            statusText.className = "text-sm text-green-600 font-bold mt-2 bg-green-50 p-2 rounded block";
-            btnSubmit.innerText = "ส่งข้อมูลเรียบร้อย";
-          } else throw new Error(result.message);
+          try {
+            const payload = {
+              action: "uploadSlip",
+              lineId: userUid, 
+              customerName: name, 
+              phone: phone, // 🟢 เพิ่มบรรทัดนี้ (ส่งเบอร์โทรไปด้วย)
+              packageName: selectedPkg.name,
+              totalCredit: selectedPkg.credit, 
+              base64Data: reader.result,
+              mimeType: "image/jpeg", 
+              fileName: userUid + "_slip.jpg"
+            };
+            
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+            
+            if (result.success) {
+              statusText.innerHTML = "✅ สมัครสำเร็จ! รอแอดมินยืนยันสลิป";
+              statusText.className = "text-sm text-green-600 font-bold mt-2 bg-green-50 p-2 rounded block";
+              btnSubmit.innerText = "ส่งข้อมูลเรียบร้อย";
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (innerError) {
+            statusText.innerText = "❌ ผิดพลาด: " + innerError.message;
+            statusText.className = "text-xs text-center mt-2 text-red-600 block font-bold";
+            btnSubmit.disabled = false; btnSubmit.innerText = "ลองอีกครั้ง";
+          }
         };
       } catch (error) {
-        statusText.innerText = "❌ ผิดพลาด: " + error.message;
+        statusText.innerText = "❌ ระบบมีปัญหา: " + error.message;
         btnSubmit.disabled = false; btnSubmit.innerText = "ลองอีกครั้ง";
       }
     }
