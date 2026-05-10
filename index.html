@@ -261,19 +261,39 @@
     let savedName = ""; let savedPhone = "";
     
     // 🟢 ส่งค่า price เข้าไปเก็บด้วย เพื่อเอามาแสดงหน้า Summary
-    const pkgOptions = {
-      PRIVATE: [
-        { id: 'P1', name: '1 ครั้ง', price: 1500, credit: 1 },
-        { id: 'P5', name: 'แพ็ค 5 ครั้ง', price: 7500, credit: 5 },
-        { id: 'P10', name: 'แพ็ค 10 ครั้ง', price: 12900, credit: 10 }
-      ],
-      GROUP: [
-        { id: 'G5', name: 'แพ็ค 5 ครั้ง', price: 2500, credit: 5 },
-        { id: 'G10', name: 'แพ็ค 10 ครั้ง', price: 4500, credit: 10 }
-      ]
-    };
-    let selectedPkg = null;
+    let packagesFromSheet = []; // เก็บรายการจาก Sheet
+    let selectedPkg = null;     // 🟢 ต้องมีบรรทัดนี้ไว้เก็บค่าที่ลูกค้าเลือกปัจจุบัน
+    
+    function selectPackageType(type) {
+      // ทำไฮไลท์ปุ่มที่เลือก (ธีมพรีเมียมเดิมของคุณอนนท์)
+      document.getElementById('btnPrivate').style.borderColor = type === 'PRIVATE' ? '#ec4899' : '#e2e8f0';
+      document.getElementById('btnGroup').style.borderColor = type === 'GROUP' ? '#ec4899' : '#e2e8f0';
+      
+      const container = document.getElementById('pkgListContainer');
+      container.innerHTML = ''; // ล้างรายการเก่าออกก่อน
 
+      // 🟢 กรองแพ็กเกจจาก Sheet ตามประเภทที่ลูกค้ากด (PRIVATE หรือ GROUP)
+      const filteredPkgs = packagesFromSheet.filter(p => p.type === type);
+
+      if (filteredPkgs.length === 0) {
+        container.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่พบแพ็กเกจในขณะนี้</p>';
+      }
+
+      filteredPkgs.forEach(pkg => {
+        container.innerHTML += `
+          <div onclick="selectPackage('${pkg.id}', '${pkg.name}', ${pkg.credit}, ${pkg.price}, '${pkg.type}')" class="border border-slate-200 p-4 rounded-xl flex justify-between items-center cursor-pointer hover:border-pink-300 transition">
+            <span class="font-bold text-slate-700">${pkg.name}</span>
+            <span class="text-pink-600 font-bold">${pkg.price.toLocaleString()} ฿</span>
+          </div>
+        `;
+      });
+      
+      container.classList.remove('hidden');
+      document.getElementById('regFormContainer').classList.add('hidden');
+      document.getElementById('paymentBox').classList.remove('hidden');
+      document.getElementById('regSuccessSummary').classList.add('hidden');
+    }
+    
     // ==========================================
     // 🌐 DICTIONARY & LANGUAGE SYSTEM
     // ==========================================
