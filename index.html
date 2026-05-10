@@ -260,12 +260,193 @@
     let allClassData = []; let myBookingsData = []; let myProfileData = null;
     let savedName = ""; let savedPhone = "";
     
-    // 🟢 ส่งค่า price เข้าไปเก็บด้วย เพื่อเอามาแสดงหน้า Summary
-    let packagesFromSheet = []; // เก็บรายการจาก Sheet
-    let selectedPkg = null;     // 🟢 ต้องมีบรรทัดนี้ไว้เก็บค่าที่ลูกค้าเลือกปัจจุบัน
+    // 🟢 ตัวแปรสำหรับจัดเก็บข้อมูลแพ็กเกจ
+    let packagesFromSheet = []; 
+    let selectedPkg = null;     
     
+    // ==========================================
+    // 🌐 DICTIONARY & LANGUAGE SYSTEM
+    // ==========================================
+    let currentLang = localStorage.getItem('yoka_lang') || 'th';
+    const translations = {
+      th: {
+        loadingData: "กำลังโหลดข้อมูล...", helloPrefix: "สวัสดีคุณ ",
+        profPkgTitle: "แพ็กเกจปัจจุบัน", profNoPkg: "ไม่พบแพ็กเกจ", profCreditTitle: "สิทธิ์คงเหลือ", profQrHint: "ยื่น QR Code นี้เพื่อเช็คอินเข้าคลาส", creditUnit: "ครั้ง",
+        regTitle: "สมัครแพ็กเกจสมาชิก", regPrivateDesc: "แบบ 1:1", regGroupDesc: "แบบ 4-5 คน",
+        labelName: "ชื่อ - นามสกุล", labelPhone: "เบอร์โทรศัพท์", labelDate: "เลือกวันที่ต้องการเข้าเรียน (วัน/เดือน/ปี) *",
+        bankName: "ธนาคารไทยพาณิชย์ (SCB)", accName: "ชื่อบัญชี: คุณอนนท์ ศรีวาจา",
+        uploadSlipText: "อัปโหลดสลิปชำระเงิน",
+        selectDateTitle: "เลือกวันที่ต้องการเรียน", btnBack: "กลับ",
+        confirmBookingTitle: "ข้อมูลสำหรับยืนยันการจอง", consentText1: "ข้าพเจ้าตรวจสอบข้อมูลเรียบร้อยแล้ว", consentText2: "ยืนยันการจองคลาส (หัก 1 สิทธิ์)",
+        emptyTitle: "ไม่มีคลาสเรียนล่วงหน้า", btnGoBook: "ไปเลือกคลาสเรียนกันเลย", myClassesTitle: "คลาสเรียนที่จองไว้",
+        btnBackToList: "กลับหน้ารวม", bookingDetailTitle: "รายละเอียดการจอง", showClassTitle: "คลาสเรียน", showDateTitle: "วันที่เรียน", showTimeTitle: "เวลา",
+        btnCancelBooking: "ยกเลิกคลาส", statusSuccess: "จองสำเร็จ", saveSuccess: "✓ บันทึกข้อมูลสำเร็จ",
+        navProfile: "โปรไฟล์", navHome: "เลือกคลาส", navMyBooking: "การจองของฉัน",
+        badgeFull: "เต็มแล้ว", badgeAvailable: "ว่าง", badgeSeat: "ที่", btnFull: "คลาสเต็ม", btnBook: "จองคลาส"
+      },
+      en: {
+        loadingData: "Loading data...", helloPrefix: "Hello, ",
+        profPkgTitle: "Current Package", profNoPkg: "No Package", profCreditTitle: "Remaining Credits", profQrHint: "Show this QR Code to check-in", creditUnit: "Credits",
+        regTitle: "Subscribe Package", regPrivateDesc: "1:1 Session", regGroupDesc: "4-5 Persons",
+        labelName: "Full Name", labelPhone: "Phone Number", labelDate: "Select Class Date (DD/MM/YYYY) *",
+        bankName: "Siam Commercial Bank (SCB)", accName: "Account Name: Anon Sriwaja",
+        uploadSlipText: "Upload Slip", 
+        selectDateTitle: "Select Study Date", btnBack: "Back",
+        confirmBookingTitle: "Booking Confirmation", consentText1: "I have checked my information", consentText2: "Confirm Booking (Deduct 1 Credit)",
+        emptyTitle: "No Upcoming Classes", btnGoBook: "Book a Class", myClassesTitle: "Booked Classes",
+        btnBackToList: "Back to List", bookingDetailTitle: "Booking Details", showClassTitle: "Class", showDateTitle: "Date", showTimeTitle: "Time",
+        btnCancelBooking: "Cancel Class", statusSuccess: "Confirmed", saveSuccess: "✓ Saved successfully",
+        navProfile: "Profile", navHome: "Classes", navMyBooking: "My Bookings",
+        badgeFull: "Full", badgeAvailable: "Left", badgeSeat: "seats", btnFull: "Full", btnBook: "Book Class"
+      }
+    };
+
+    function translateDayName(rawDate) {
+      if(!rawDate) return "";
+      let cleanDay = rawDate.replace(/^วัน/, '').trim().toUpperCase();
+      const mapToTh = { "SUNDAY": "วันอาทิตย์", "MONDAY": "วันจันทร์", "TUESDAY": "วันอังคาร", "WEDNESDAY": "วันพุธ", "THURSDAY": "วันพฤหัสบดี", "FRIDAY": "วันศุกร์", "SATURDAY": "วันเสาร์" };
+      const mapToEn = { "อาทิตย์": "SUNDAY", "จันทร์": "MONDAY", "อังคาร": "TUESDAY", "พุธ": "WEDNESDAY", "พฤหัสบดี": "THURSDAY", "ศุกร์": "FRIDAY", "เสาร์": "SATURDAY" };
+      return currentLang === 'th' ? (mapToTh[cleanDay] || `วัน${rawDate.replace(/^วัน/, '').trim()}`) : (mapToEn[cleanDay.replace(/^วัน/, '').trim()] || cleanDay);
+    }
+
+    function applyLanguage() {
+      const toggleBtn = document.getElementById('langToggle');
+      if(toggleBtn) toggleBtn.checked = currentLang === 'en';
+      document.getElementById('langThText').className = currentLang === 'th' ? "text-[10px] font-bold text-white mr-1.5" : "text-[10px] font-bold text-white/50 mr-1.5";
+      document.getElementById('langEnText').className = currentLang === 'en' ? "text-[10px] font-bold text-white" : "text-[10px] font-bold text-white/50";
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+      });
+
+      const profNameEl = document.getElementById('profileName');
+      if (profNameEl && savedName) profNameEl.innerText = translations[currentLang].helloPrefix + savedName;
+
+      if(allClassData.length > 0) {
+        if(!document.getElementById('dayListView').classList.contains('hidden')) renderDayList();
+        if(!document.getElementById('classListView').classList.contains('hidden')) {
+           switchTab('home'); 
+        }
+        if(!document.getElementById('myBookingsListState').classList.contains('hidden')) renderBookingsList();
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = document.getElementById('langToggle').checked ? 'en' : 'th';
+      localStorage.setItem('yoka_lang', currentLang);
+      applyLanguage();
+    }
+
+    function t(key) { return translations[currentLang][key] || key; }
+
+    // ==========================================
+    // Core Functions
+    // ==========================================
+    async function main() {
+      applyLanguage(); 
+      await liff.init({ liffId: LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        userUid = profile.userId;
+        savedName = profile.displayName; 
+        document.getElementById('profileName').innerText = t('helloPrefix') + savedName;
+        document.getElementById('profileImage').src = profile.pictureUrl;
+        document.getElementById('profileImage').classList.remove('hidden');
+        document.getElementById('profQrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${userUid}`;
+        await fetchData(); 
+      } else { liff.login(); }
+    }
+
+    async function fetchData() {
+      document.getElementById('loading').style.display = 'flex';
+      try {
+        const response = await fetch(`${GAS_URL}?uid=${userUid}`);
+        const data = await response.json();
+        allClassData = data.classes || []; 
+        myBookingsData = data.bookings || [];
+        myProfileData = data.profile || null; 
+        
+        // 🟢 เพิ่มบรรทัดนี้ เพื่อรับแพ็กเกจมาจาก API ของฝั่ง Apps Script
+        packagesFromSheet = data.packages || []; 
+
+        if (myProfileData && myProfileData.status === "ใช้งานได้") {
+          savedName = myProfileData.name;
+          document.getElementById('name').value = savedName; 
+          document.getElementById('profileName').innerText = t('helloPrefix') + savedName;
+          document.getElementById('profPackageName').innerText = myProfileData.package;
+          document.getElementById('profStatus').innerText = "ใช้งานได้";
+          document.getElementById('profRemaining').innerText = myProfileData.remainingCredit;
+          document.getElementById('profTotal').innerText = myProfileData.totalCredit;
+          switchTab('profile'); 
+        } else {
+          // หากรอยืนยันสลิป ให้แสดงหน้า summary แทนที่จะต้องอัปโหลดใหม่
+          if(myProfileData && myProfileData.status === "รอตรวจสอบสลิป") {
+            document.getElementById('regFormContainer').classList.remove('hidden');
+            document.getElementById('paymentBox').classList.add('hidden');
+            document.getElementById('regSuccessSummary').classList.remove('hidden');
+            document.getElementById('sumName').innerText = myProfileData.name;
+            document.getElementById('sumPkg').innerText = myProfileData.package;
+            document.getElementById('sumPrice').innerText = "- ฿"; // ราคาไม่ได้ดึงมา ซ่อนไว้ก่อนได้
+          }
+          switchTab('profile'); 
+        }
+      } catch (error) { alert("เกิดข้อผิดพลาดในการโหลดข้อมูล"); }
+      document.getElementById('loading').style.display = 'none';
+      applyLanguage(); 
+    }
+
+    function switchTab(tab) {
+      const btnProf = document.getElementById('tabProfile');
+      const btnHome = document.getElementById('tabHome');
+      const btnBook = document.getElementById('tabBooking');
+      
+      [btnProf, btnHome, btnBook].forEach(btn => {
+        btn.className = "flex-1 flex flex-col items-center p-2 text-white/50 hover:text-white transition-all";
+        btn.querySelector('span').className = "text-[10px] font-medium";
+      });
+
+      ['profileView', 'registerView', 'dayListView', 'classListView', 'bookingForm', 'myBookingView'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      if (tab === 'profile') {
+        btnProf.className = "flex-1 flex flex-col items-center p-2 text-white transition-all scale-110 drop-shadow-md";
+        btnProf.querySelector('span').className = "text-[10px] font-bold";
+        
+        if (myProfileData && myProfileData.status === "ใช้งานได้") {
+          document.getElementById('profileView').classList.remove('hidden');
+        } else {
+          document.getElementById('registerView').classList.remove('hidden'); 
+        }
+      } 
+      else if (tab === 'home') {
+        if (!myProfileData || myProfileData.remainingCredit <= 0 || myProfileData.status !== "ใช้งานได้") {
+          alert("คุณต้องมีแพ็กเกจและสิทธิ์คงเหลือ จึงจะทำการจองได้ครับ");
+          return switchTab('profile');
+        }
+        btnHome.className = "flex-1 flex flex-col items-center p-2 text-white transition-all scale-110 drop-shadow-md";
+        btnHome.querySelector('span').className = "text-[10px] font-bold";
+        renderDayList();
+      } 
+      else if (tab === 'mybooking') {
+        btnBook.className = "flex-1 flex flex-col items-center p-2 text-white transition-all scale-110 drop-shadow-md relative";
+        btnBook.querySelector('span').className = "text-[10px] font-bold";
+        document.getElementById('myBookingView').classList.remove('hidden');
+        
+        if(myBookingsData.length === 0) {
+          document.getElementById('emptyBookingState').classList.remove('hidden');
+          document.getElementById('myBookingsListState').classList.add('hidden');
+        } else {
+          document.getElementById('emptyBookingState').classList.add('hidden');
+          document.getElementById('myBookingsListState').classList.remove('hidden');
+          renderBookingsList();
+        }
+      }
+    }
+
+    // 🟢 ระบบเลือกประเภทแพ็กเกจ (หน้าสมัคร) แบบเสร็จสมบูรณ์
     function selectPackageType(type) {
-      // ทำไฮไลท์ปุ่มที่เลือก (ธีมพรีเมียมเดิมของคุณอนนท์)
       document.getElementById('btnPrivate').style.borderColor = type === 'PRIVATE' ? '#ec4899' : '#e2e8f0';
       document.getElementById('btnGroup').style.borderColor = type === 'GROUP' ? '#ec4899' : '#e2e8f0';
       
@@ -292,6 +473,17 @@
       document.getElementById('regFormContainer').classList.add('hidden');
       document.getElementById('paymentBox').classList.remove('hidden');
       document.getElementById('regSuccessSummary').classList.add('hidden');
+    }
+
+    // 🟢 ฟังก์ชันเก็บค่าแพ็กเกจเมื่อลูกค้าจิ้มเลือก (ก่อนชำระเงิน)
+    function selectPackage(id, name, credit, price, type) {
+      selectedPkg = { id, name, credit, price, type };
+      
+      // แสดงฟอร์มให้กรอกข้อมูลเพื่อโอนเงิน
+      document.getElementById('regFormContainer').classList.remove('hidden');
+      
+      // ซ่อนลิสต์ที่เลือกไปแล้ว เพื่อให้ดูสะอาดตา (จะปรับเป็นไม่ซ่อนก็ได้)
+      document.getElementById('pkgListContainer').classList.add('hidden');
     }
     
     // ==========================================
