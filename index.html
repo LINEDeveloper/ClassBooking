@@ -264,18 +264,20 @@
     let packagesFromSheet = []; // เก็บรายการจาก Sheet
     let selectedPkg = null;     // 🟢 ต้องมีบรรทัดนี้ไว้เก็บค่าที่ลูกค้าเลือกปัจจุบัน
     
-   function selectPackage(id, name, credit, price, type) {
-      selectedPkg = { id, name, credit, price, type };
+    function selectPackageType(type) {
+      // ทำไฮไลท์ปุ่มที่เลือก (ธีมพรีเมียมเดิมของคุณอนนท์)
+      document.getElementById('btnPrivate').style.borderColor = type === 'PRIVATE' ? '#ec4899' : '#e2e8f0';
+      document.getElementById('btnGroup').style.borderColor = type === 'GROUP' ? '#ec4899' : '#e2e8f0';
       
-      // แสดงฟอร์มกรอกข้อมูลและชำระเงิน
-      document.getElementById('regFormContainer').classList.remove('hidden');
-      
-      // ซ่อนรายการแพ็กเกจ
-      document.getElementById('pkgListContainer').classList.add('hidden');
-      
-      // (ทางเลือก) อัปเดตราคาในหน้าต่างชำระเงินให้ตรงกับที่เลือก
-      // document.querySelector('#paymentBox p.text-pink-600').innerText = price.toLocaleString() + ' ฿';
-    }
+      const container = document.getElementById('pkgListContainer');
+      container.innerHTML = ''; // ล้างรายการเก่าออกก่อน
+
+      // 🟢 กรองแพ็กเกจจาก Sheet ตามประเภทที่ลูกค้ากด (PRIVATE หรือ GROUP)
+      const filteredPkgs = packagesFromSheet.filter(p => p.type === type);
+
+      if (filteredPkgs.length === 0) {
+        container.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">ไม่พบแพ็กเกจในขณะนี้</p>';
+      }
 
       filteredPkgs.forEach(pkg => {
         container.innerHTML += `
