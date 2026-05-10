@@ -362,41 +362,72 @@
     }
 
     async function fetchData() {
-      document.getElementById('loading').style.display = 'flex';
+      const loadingScreen = document.getElementById('loading');
+      loadingScreen.style.display = 'flex';
+      
       try {
         const response = await fetch(`${GAS_URL}?uid=${userUid}`);
-        const data = await response.json();
-        allClassData = data.classes || []; 
-        myBookingsData = data.bookings || [];
-        myProfileData = data.profile || null; 
         
-        // 🟢 เพิ่มบรรทัดนี้ เพื่อรับแพ็กเกจมาจาก API ของฝั่ง Apps Script
-        packagesFromSheet = data.packages || []; 
+        // 1. เช็คว่าเซิร์ฟเวอร์ตอบกลับมาปกติหรือไม่ (ติด CORS หรือติด Login หรือเปล่า)
+        if (!response.ok) throw new Error("HTTP Error: " + response.status);
+        
+        const text = await response.text(); 
+        
+        try {
+          const data = JSON.parse(text); 
+          
+          // 2. เช็คว่ามี Error ส่งมาจากฝั่ง Apps Script ไหม
+          if (data.error) throw new Error("หลังบ้านแจ้งเตือน: " + data.error);
+          
+          allClassData = data.classes || []; 
+          myBookingsData = data.bookings || [];
+          myProfileData = data.profile || null; 
+          packagesFromSheet = data.packages || []; 
 
-        if (myProfileData && myProfileData.status === "ใช้งานได้") {
-          savedName = myProfileData.name;
-          document.getElementById('name').value = savedName; 
-          document.getElementById('profileName').innerText = t('helloPrefix') + savedName;
-          document.getElementById('profPackageName').innerText = myProfileData.package;
-          document.getElementById('profStatus').innerText = "ใช้งานได้";
-          document.getElementById('profRemaining').innerText = myProfileData.remainingCredit;
-          document.getElementById('profTotal').innerText = myProfileData.totalCredit;
-          switchTab('profile'); 
-        } else {
-          // หากรอยืนยันสลิป ให้แสดงหน้า summary แทนที่จะต้องอัปโหลดใหม่
-          if(myProfileData && myProfileData.status === "รอตรวจสอบสลิป") {
-            document.getElementById('regFormContainer').classList.remove('hidden');
-            document.getElementById('paymentBox').classList.add('hidden');
-            document.getElementById('regSuccessSummary').classList.remove('hidden');
-            document.getElementById('sumName').innerText = myProfileData.name;
-            document.getElementById('sumPkg').innerText = myProfileData.package;
-            document.getElementById('sumPrice').innerText = "- ฿"; // ราคาไม่ได้ดึงมา ซ่อนไว้ก่อนได้
+          if (myProfileData && myProfileData.status === "ใช้งานได้") {
+            savedName = myProfileData.name;
+            document.getElementById('name').value = savedName; 
+            document.getElementById('profileName').innerText = t('helloPrefix') + savedName;
+            document.getElementById('profPackageName').innerText = myProfileData.package;
+            document.getElementById('profStatus').innerText = "ใช้งานได้";
+            document.getElementById('profRemaining').innerText = myProfileData.remainingCredit;
+            document.getElementById('profTotal').innerText = myProfileData.totalCredit;
+            switchTab('profile'); 
+          } else {
+            if(myProfileData && myProfileData.status === "รอตรวจสอบสลิป") {
+              document.getElementById('regFormContainer').classList.remove('hidden');
+              document.getElementById('paymentBox').classList.add('hidden');
+              document.getElementById('regSuccessSummary').classList.remove('hidden');
+              document.getElementById('sumName').innerText = myProfileData.name;
+              document.getElementById('sumType').innerText = "PACKAGE"; // โชว์ประเภท
+              document.getElementById('sumPkg').innerText = myProfileData.package;
+              document.getElementById('sumPrice').innerText = "- ฿"; 
+            }
+            switchTab('profile'); 
           }
-          switchTab('profile'); 
+          applyLanguage();
+
+        } catch (parseError) {
+          // ถ้าข้อมูลที่ตอบกลับมาไม่ใช่ JSON (เช่น เป็นหน้าเว็บ Google)
+          throw new Error("การเชื่อมต่อผิดพลาด (ไม่ใช่ JSON): " + text.substring(0, 50));
         }
-      } catch (error) { alert("เกิดข้อผิดพลาดในการโหลดข้อมูล"); }
-      document.getElementById('loading').style.display = 'none';
-      applyLanguage(); 
+
+      } catch (error) {
+        // 🚨 แทนที่จะหมุนค้าง ให้โชว์ Error กลางหน้าจอเลย!
+        loadingScreen.innerHTML = `
+          <div class="bg-white p-6 rounded-2xl shadow-lg border border-red-200 text-center max-w-[80%]">
+            <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <p class="text-red-600 font-bold mb-1">ระบบขัดข้อง</p>
+            <p class="text-[10px] text-slate-500 font-mono text-left bg-slate-50 p-2 rounded">${error.message}</p>
+          </div>
+        `;
+        return; // หยุดการทำงานตรงนี้ ไม่ต้องให้หน้าหมุนค้างหายไป
+      }
+
+      // ถ้าทุกอย่างสำเร็จ ถึงจะซ่อนหน้า Loading
+      loadingScreen.style.display = 'none';
     }
 
     function switchTab(tab) {
